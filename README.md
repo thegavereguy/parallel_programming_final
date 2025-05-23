@@ -38,37 +38,23 @@
 - `third-party`
     - Git submodules of dependencies
 
-## Important notes
-Due to an old GLIBC version, the Vulkan implementation cannot be compiled on the `cluster`, as the compilation of one of the dependencies fails.
-Please make sure to export `BUILD_VULKAN=false`.
-A test implementation using OpenACC was added but it's not working correctly. 
-If compiling manually on the `cluster`, make sure to use the absolute path for the most recent version of CMake (`/apps/cmake-3.20.3/bin/cmake`), as the on provided by the module 'cmake-3.15.2' causes build problems.
-
 ## Getting started
-### Dependencies
-
-- CMake >= 3.20
-- Vulkan API >= 1.3 (if enabled)
 
 ### Cloning repository
+
 ```sh
-git clone --recursive https://github.com/thgavereguy/parallel_computing_final
-cd parallel_computing_final
+git clone --recursive https://github.com/thgavereguy/parallel_programming_final
+cd parallel_programming_final
 ```
 
 ### Building 
 
-The project has 4 main parts, 3 of which can be skipped during compilation. Enabling the building of each part also toggles the running of the benchmarks and relative data collection when running the 'assignment.sh' script.
-
 #### Parts
 - OpenMP implementation '(required)'.
-- Vulkan implementation (can be included by setting the ENV variable )
-    - `export BUILD_VULKAN=true`
 - MPI implementation (can be included by setting the ENV variable )
     - `export BUILD_MPI=true`
-- OpenAcc implementation (can be included by setting the ENV variable )
-    - `export BUILD_ACC=true`
-#### Optimization
+
+#### Optimization (to be fixed)
 
 Compiler optimization can be toggled using:
 ```
