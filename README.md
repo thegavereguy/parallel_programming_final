@@ -8,13 +8,11 @@
   - [Parallelized Solution of 1D Heat Equation](#parallelized-solution-of-1d-heat-equation)
   - [Index](#index)
   - [Project structure](#project-structure)
-  - [Important notes](#important-notes)
   - [Getting started](#getting-started)
-    - [Dependencies](#dependencies)
     - [Cloning repository](#cloning-repository)
     - [Building](#building)
       - [Parts](#parts)
-      - [Optimization](#optimization)
+      - [Optimization (to be fixed)](#optimization-to-be-fixed)
       - [Manual building](#manual-building)
       - [Automatic building and test running](#automatic-building-and-test-running)
 <!--toc:end-->
@@ -23,14 +21,10 @@
 
 - `apps`
     - Source code for test executables and the MPI solution
-- `framework`
-    - Source code for the Vulkan framework
 - `include/lib`
     - Header files of the libraries
 - `scripts`
     - Bash and python scripts to build, run benchmarks and visualize results
-- `shaders`
-    - Source code for GLSL shaders
 - `src`
     - Source code of the libraries
 - `tests`
