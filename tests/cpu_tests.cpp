@@ -111,7 +111,7 @@ TEST_CASE("Parallel8 inner solution - Test", "[par8_ex]") {
   input[0]                  = 100;
   input[conditions.n_x - 1] = 200;
 
-  parallel8_inner_explicit(conditions, input, output);
+  parallel8_explicit(conditions, input, output);
   for (int i = 0; i < conditions.n_x; i++) {
     REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i], 0.001));
   }

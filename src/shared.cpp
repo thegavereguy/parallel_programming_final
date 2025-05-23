@@ -25,8 +25,7 @@ void sequential_explicit(Conditions conditions, float* input, float* output) {
   }
 }
 
-void parallel2_inner_explicit(Conditions conditions, float* input,
-                              float* output) {
+void parallel2_explicit(Conditions conditions, float* input, float* output) {
   output[0]                  = input[0];
   output[conditions.n_x - 1] = input[conditions.n_x - 1];
   float dt                   = conditions.t_final / (conditions.n_t - 1);
@@ -42,8 +41,7 @@ void parallel2_inner_explicit(Conditions conditions, float* input,
     std::swap(input, output);
   }
 }
-void parallel4_inner_explicit(Conditions conditions, float* input,
-                              float* output) {
+void parallel4_explicit(Conditions conditions, float* input, float* output) {
   output[0]                  = input[0];
   output[conditions.n_x - 1] = input[conditions.n_x - 1];
   float dt                   = conditions.t_final / (conditions.n_t - 1);
@@ -59,8 +57,7 @@ void parallel4_inner_explicit(Conditions conditions, float* input,
     std::swap(input, output);
   }
 }
-void parallel8_inner_explicit(Conditions conditions, float* input,
-                              float* output) {
+void parallel8_explicit(Conditions conditions, float* input, float* output) {
   output[0]                  = input[0];
   output[conditions.n_x - 1] = input[conditions.n_x - 1];
   float dt                   = conditions.t_final / (conditions.n_t - 1);

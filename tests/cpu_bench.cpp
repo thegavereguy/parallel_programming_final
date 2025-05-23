@@ -53,19 +53,20 @@ TEST_CASE("sequential - implicit - BENCH", "[seq_im]") {
     };
   }
 }
-TEST_CASE("parallel - 2 threads - explicit - BENCH", "[par2_im]") {
+TEST_CASE("parallel - 2 threads - explicit - BENCH", "[par2_ex]") {
   char* name = new char[100];
-  for (Conditions conditions : test_cases_old) {
-    sprintf(name, "%ld,%ld", (long)conditions.n_x, (long)conditions.n_t);
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
 
     BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
-      float* input              = new float[conditions.n_x];
-      input[0]                  = 100;
-      input[conditions.n_x - 1] = 200;
-      float* output             = new float[conditions.n_x];
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel2_inner_explicit(conditions, input, output);
+        return parallel2_explicit(conditions.first, input, output);
       });
 
       delete[] input;
@@ -75,17 +76,18 @@ TEST_CASE("parallel - 2 threads - explicit - BENCH", "[par2_im]") {
 }
 TEST_CASE("parallel - 4 threads - explicit -BENCH", "[par4_ex]") {
   char* name = new char[100];
-  for (Conditions conditions : test_cases_old) {
-    sprintf(name, "%ld,%ld", (long)conditions.n_x, (long)conditions.n_t);
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
 
     BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
-      float* input              = new float[conditions.n_x];
-      input[0]                  = 100;
-      input[conditions.n_x - 1] = 200;
-      float* output             = new float[conditions.n_x];
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel4_inner_explicit(conditions, input, output);
+        return parallel4_explicit(conditions.first, input, output);
       });
 
       delete[] input;
@@ -95,17 +97,18 @@ TEST_CASE("parallel - 4 threads - explicit -BENCH", "[par4_ex]") {
 }
 TEST_CASE("parallel - 8 threads - explicit - BENCH", "[par8_ex]") {
   char* name = new char[100];
-  for (Conditions conditions : test_cases_old) {
-    sprintf(name, "%ld,%ld", (long)conditions.n_x, (long)conditions.n_t);
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
 
     BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
-      float* input              = new float[conditions.n_x];
-      input[0]                  = 100;
-      input[conditions.n_x - 1] = 200;
-      float* output             = new float[conditions.n_x];
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel8_inner_explicit(conditions, input, output);
+        return parallel8_explicit(conditions.first, input, output);
       });
 
       delete[] input;
@@ -115,16 +118,18 @@ TEST_CASE("parallel - 8 threads - explicit - BENCH", "[par8_ex]") {
 }
 TEST_CASE("parallel alligned - 4 threads - explicit - BENCH", "[par4_all_ex]") {
   char* name = new char[100];
-  for (Conditions conditions : test_cases_old) {
-    sprintf(name, "%ld,%ld", (long)conditions.n_x, (long)conditions.n_t);
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
+
     BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
-      float* input              = new float[conditions.n_x];
-      input[0]                  = 100;
-      input[conditions.n_x - 1] = 200;
-      float* output             = new float[conditions.n_x];
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel4_alligned_explicit(conditions, input, output);
+        return parallel4_alligned_explicit(conditions.first, input, output);
       });
 
       delete[] input;
@@ -134,16 +139,18 @@ TEST_CASE("parallel alligned - 4 threads - explicit - BENCH", "[par4_all_ex]") {
 }
 TEST_CASE("sequential unroll - explicit - BENCH", "[seq_unr_ex]") {
   char* name = new char[100];
-  for (Conditions conditions : test_cases_old) {
-    sprintf(name, "%ld,%ld", (long)conditions.n_x, (long)conditions.n_t);
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
+
     BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
-      float* input              = new float[conditions.n_x];
-      input[0]                  = 100;
-      input[conditions.n_x - 1] = 200;
-      float* output             = new float[conditions.n_x];
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return sequential_unroll_explicit(conditions, input, output);
+        return sequential_unroll_explicit(conditions.first, input, output);
       });
 
       delete[] input;

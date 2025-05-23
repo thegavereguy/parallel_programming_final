@@ -1,8 +1,8 @@
 #include <lib/common.h>
 void sequential_explicit(Conditions, float*, float*);
-void parallel2_inner_explicit(Conditions, float*, float*);
-void parallel4_inner_explicit(Conditions, float*, float*);
-void parallel8_inner_explicit(Conditions, float*, float*);
+void parallel2_explicit(Conditions, float*, float*);
+void parallel4_explicit(Conditions, float*, float*);
+void parallel8_explicit(Conditions, float*, float*);
 
 void parallel2_outer_explicit(Conditions, float*, float*);
 
