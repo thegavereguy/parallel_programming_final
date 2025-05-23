@@ -5,12 +5,6 @@ project(third_party LANGUAGES C CXX)
 
 add_subdirectory(fmt)
 
-# glm
-add_library(glm INTERFACE)
-set(GLM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glm)
-target_sources(glm INTERFACE ${GLM_DIR}/glm/glm.hpp)
-target_include_directories(glm SYSTEM INTERFACE ${GLM_DIR})
-
 # # vma
 # add_library(vma INTERFACE)
 # set(VMA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/include)
