@@ -3,10 +3,8 @@
 
 #include <catch2/benchmark/catch_benchmark.hpp>
 #include <catch2/benchmark/catch_chronometer.hpp>
-#include <catch2/benchmark/catch_clock.hpp>
 #include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_session.hpp>
-#include <catch2/catch_test_case_info.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include <catch2/reporters/catch_reporter_streaming_base.hpp>
@@ -74,7 +72,29 @@ TEST_CASE("parallel - 2 threads - explicit - BENCH", "[par2_ex]") {
     };
   }
 }
-TEST_CASE("parallel - 4 threads - explicit -BENCH", "[par4_ex]") {
+TEST_CASE("parallel - 2 threads - implicit - BENCH", "[par2_im]") {
+  char* name = new char[100];
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
+
+    BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
+
+      meter.measure([conditions, input, output] {
+        return parallel2_implicit(conditions.first, input, output);
+      });
+
+      delete[] input;
+      delete[] output;
+    };
+  }
+}
+
+TEST_CASE("parallel - 4 threads - explicit - BENCH", "[par4_ex]") {
   char* name = new char[100];
   for (auto conditions : target_cases) {
     sprintf(name, "%s,%ld,%ld", conditions.second.data(),
@@ -95,7 +115,49 @@ TEST_CASE("parallel - 4 threads - explicit -BENCH", "[par4_ex]") {
     };
   }
 }
+TEST_CASE("parallel - 4 threads - implicit - BENCH", "[par4_im]") {
+  char* name = new char[100];
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
+
+    BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
+
+      meter.measure([conditions, input, output] {
+        return parallel4_implicit(conditions.first, input, output);
+      });
+
+      delete[] input;
+      delete[] output;
+    };
+  }
+}
 TEST_CASE("parallel - 8 threads - explicit - BENCH", "[par8_ex]") {
+  char* name = new char[100];
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
+
+    BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
+
+      meter.measure([conditions, input, output] {
+        return parallel8_explicit(conditions.first, input, output);
+      });
+
+      delete[] input;
+      delete[] output;
+    };
+  }
+}
+TEST_CASE("parallel - 8 threads - implicit - BENCH", "[par8_im]") {
   char* name = new char[100];
   for (auto conditions : target_cases) {
     sprintf(name, "%s,%ld,%ld", conditions.second.data(),
