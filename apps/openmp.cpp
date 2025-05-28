@@ -15,16 +15,12 @@ int main() {
 
   Conditions conditions = target_cases[9].first;
 
-  fmt::print("nt {}", conditions.n_t);
   float* input              = new float[conditions.n_x];
   input[0]                  = 100;
   input[conditions.n_x - 1] = 200;
   float* output             = new float[conditions.n_x];
   struct timespec start, end;
   clock_gettime(CLOCK_MONOTONIC, &start);
-
-  // parallel2_collapse_explicit(conditions, input, output);
-  // parallel4_inner_explicit(conditions, input, output);
 
   parallel4_implicit(conditions, input, output);
 

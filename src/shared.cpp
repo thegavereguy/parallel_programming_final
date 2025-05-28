@@ -92,23 +92,6 @@ void sequential_unroll_explicit(Conditions conditions, float* input,
   }
 }
 
-void parallel2_collapse_explicit(Conditions conditions, float* input,
-                                 float* output) {
-  output[0]                  = input[0];
-  output[conditions.n_x - 1] = input[conditions.n_x - 1];
-  float dt                   = conditions.t_final / (conditions.n_t - 1);
-  float dx                   = conditions.L / (conditions.n_x - 1);
-
-#pragma omp parallel for num_threads(2) collapse(2)
-  for (int i = 0; i < conditions.n_t; i++) {
-    for (int j = 1; j < conditions.n_x - 1; j++) {
-      output[j] =
-          input[j] + conditions.alpha * (dt / (dx * dx)) *
-                         (input[j + 1] - 2 * input[j] + input[j - 1]);  // d^2u
-    }
-  }
-}
-
 void parallel4_alligned_explicit(Conditions conditions, float* input,
                                  float* output) {
   float dt = conditions.t_final / (conditions.n_t - 1);
@@ -126,6 +109,39 @@ void parallel4_alligned_explicit(Conditions conditions, float* input,
 
   for (int t = 0; t < conditions.n_t; t++) {
 #pragma omp parallel num_threads(4)
+    {
+#pragma omp for simd aligned(tmp_in, tmp_out : 32) schedule(static)
+      for (int j = 1; j < conditions.n_x - 1; j += 1) {
+        tmp_out[j] = tmp_in[j] + conditions.alpha * (dt / (dx * dx)) *
+                                     (tmp_in[j + 1] - 2 * tmp_in[j] +
+                                      tmp_in[j - 1]);  // d^2u
+      }
+    }
+
+    std::swap(tmp_in, tmp_out);
+  }
+  for (int i = 0; i < conditions.n_x; i++) {
+    output[i] = tmp_in[i];
+  }
+  free(tmp_out);
+  free(tmp_in);
+}
+void sequential_alligned_explicit(Conditions conditions, float* input,
+                                  float* output) {
+  float dt = conditions.t_final / (conditions.n_t - 1);
+  float dx = conditions.L / (conditions.n_x - 1);
+
+  float* tmp_in  = (float*)aligned_alloc(32, conditions.n_x * sizeof(float));
+  float* tmp_out = (float*)aligned_alloc(32, conditions.n_x * sizeof(float));
+  for (int i = 0; i < conditions.n_x; i++) {
+    tmp_in[i]  = input[i];
+    tmp_out[i] = 0;
+  }
+
+  tmp_out[0]                  = tmp_in[0];
+  tmp_out[conditions.n_x - 1] = tmp_in[conditions.n_x - 1];
+
+  for (int t = 0; t < conditions.n_t; t++) {
     {
 #pragma omp for simd aligned(tmp_in, tmp_out : 32) schedule(static)
       for (int j = 1; j < conditions.n_x - 1; j += 1) {
@@ -206,6 +222,74 @@ void sequential_implicit(Conditions conditions, float* input, float* output) {
   }
 }
 
+void sequential_implicit_simd(Conditions conditions, float* input,
+                              float* output) {
+  float dt = conditions.t_final / (conditions.n_t - 1);
+  float dx = conditions.L / (conditions.n_x - 1);
+
+  // Coefficient for the scheme
+  const double r = conditions.alpha * dt / (dx * dx);
+  // fmt::print("r = {}\n", r);
+
+  std::vector<double> a(conditions.n_x, -r);             // lower diagonal
+  std::vector<double> b(conditions.n_x, 1.0 + 2.0 * r);  // main diagonal
+  std::vector<double> c(conditions.n_x, -r);             // upper diagonal
+  std::vector<double> d(conditions.n_x);                 // right-hand side
+
+  std::vector<double> b_work(conditions.n_x);
+  std::vector<double> d_work(conditions.n_x);
+
+  // Set boundary conditions
+  a[0] = 0.0;
+  c[0] = 0.0;
+  b[0] = 1.0;
+
+  a[conditions.n_x - 1] = 0.0;
+  c[conditions.n_x - 1] = 0.0;
+  b[conditions.n_x - 1] = 1.0;
+
+  for (int n = 0; n < conditions.n_t; ++n) {
+#pragma omp simd
+    for (int i = 1; i < conditions.n_x - 1; ++i) {
+      d[i] = input[i];
+    }
+
+    // Apply boundary conditions
+    d[0]                  = input[0];
+    d[conditions.n_x - 1] = input[conditions.n_x - 1];
+
+    // Create working copies for Thomas algorithm
+
+#pragma omp simd
+    for (int i = 0; i < conditions.n_x; ++i) {
+      b_work[i] = b[i];
+      d_work[i] = d[i];
+    }
+
+    // Forward sweep
+    // Remeber to test with simd
+#pragma omp simd
+    for (int i = 1; i < conditions.n_x; ++i) {
+      double m = a[i] / b_work[i - 1];
+      b_work[i] -= m * c[i - 1];
+      d_work[i] -= m * d_work[i - 1];
+    }
+
+    // Backward substitution
+    output[conditions.n_x - 1] =
+        d_work[conditions.n_x - 1] / b_work[conditions.n_x - 1];
+#pragma omp simd
+    for (int i = conditions.n_x - 2; i >= 0; --i) {
+      output[i] = (d_work[i] - c[i] * output[i + 1]) / b_work[i];
+    }
+
+    // Update solution for next time step
+#pragma omp simd
+    for (int i = 0; i < conditions.n_x; ++i) {
+      input[i] = output[i];
+    }
+  }
+}
 void parallel2_implicit(Conditions conditions, float* input, float* output) {
   float dt = conditions.t_final / (conditions.n_t - 1);
   float dx = conditions.L / (conditions.n_x - 1);
