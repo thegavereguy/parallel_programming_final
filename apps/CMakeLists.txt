@@ -1,5 +1,3 @@
-
-# custom target for OpenMP
 add_executable(openmp openmp.cpp)
 target_link_libraries(openmp PUBLIC  fmt shared)
 

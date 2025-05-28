@@ -1,11 +1,9 @@
 add_library(shared STATIC shared.cpp ../include/lib/shared.h)
 add_library(common STATIC common.cpp ../include/lib/common.h)
 
-target_include_directories(test_lib PUBLIC ../include)
 target_include_directories(shared PUBLIC ../include)
 target_include_directories(common PUBLIC ../include)
 
-target_link_libraries(test_lib PUBLIC Catch2::Catch2 fmt)
 
 find_package(OpenMP REQUIRED)
 target_link_libraries(shared PUBLIC fmt OpenMP::OpenMP_CXX)
@@ -23,7 +21,6 @@ endif()
 
 
 if(DEFINED ENV{BUILD_MPI} AND "$ENV{BUILD_MPI}" STREQUAL "true")
-
 	find_package(MPI REQUIRED)
 	add_library(distributed STATIC distributed.cpp ../include/lib/distributed.h)
 	target_link_libraries(distributed PUBLIC MPI::MPI_CXX fmt)

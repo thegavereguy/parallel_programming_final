@@ -1,9 +1,6 @@
 export BENCHMARK_CONFIDENCE_INTERVAL=0.30
 export BENCH_SAMPLES=2
-export BUILD_VULKAN=true
 export BUILD_MPI=false
-export BUILD_ACC=true
-export DOWNLOAD_VULKAN_SDK=false
 export CLEAR_RESULTS=0
 export BUILD_OPTIMIZED=true
 
@@ -22,7 +19,6 @@ fi
 
 # Print information about the cpu and gpu (which is somewhere in lspci)
 lscpu > results/cpu_info.txt
-lspci > results/gpu_info.txt
 
 # Creta a build directory if it does not exist
 mkdir build > /dev/null
