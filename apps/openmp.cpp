@@ -11,7 +11,9 @@ int main() {
   //  const int n_x        = 32768;    // Number of spatial points
   //  const int n_t        = 40000;
   // Conditions conditions = {1.5, 0.035, 0.00025, 32768, 40000};
-  Conditions conditions = {1.0, 0.5, 0.01, 16, 30};
+  // Conditions conditions = {1.0, 0.5, 0.01, 16, 30};
+
+  Conditions conditions = target_cases[9].first;
 
   fmt::print("nt {}", conditions.n_t);
   float* input              = new float[conditions.n_x];
@@ -24,15 +26,15 @@ int main() {
   // parallel2_collapse_explicit(conditions, input, output);
   // parallel4_inner_explicit(conditions, input, output);
 
-  sequential_implicit(conditions, input, output);
+  parallel4_implicit(conditions, input, output);
 
-  clock_gettime(CLOCK_MONOTONIC, &end);
-  long seconds_ts              = end.tv_sec - start.tv_sec;
-  long nanoseconds_ts          = end.tv_nsec - start.tv_nsec;
-  double elapsed_clock_gettime = seconds_ts + nanoseconds_ts * 1e-9;
-
-  fmt::print("Elapsed time using clock_gettime: {} seconds\n",
-             elapsed_clock_gettime);
+  // clock_gettime(CLOCK_MONOTONIC, &end);
+  // long seconds_ts              = end.tv_sec - start.tv_sec;
+  // long nanoseconds_ts          = end.tv_nsec - start.tv_nsec;
+  // double elapsed_clock_gettime = seconds_ts + nanoseconds_ts * 1e-9;
+  //
+  // fmt::print("Elapsed time using clock_gettime: {} seconds\n",
+  //            elapsed_clock_gettime);
 
   // print second, second to last and middle elements
   fmt::print("Second element: {}\n", output[1]);

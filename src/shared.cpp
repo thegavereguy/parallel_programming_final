@@ -185,6 +185,7 @@ void sequential_implicit(Conditions conditions, float* input, float* output) {
     }
 
     // Forward sweep
+    // Remeber to test with simd
     for (int i = 1; i < conditions.n_x; ++i) {
       double m = a[i] / b_work[i - 1];
       b_work[i] -= m * c[i - 1];
