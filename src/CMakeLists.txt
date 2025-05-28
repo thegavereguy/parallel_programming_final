@@ -1,4 +1,3 @@
-add_library(test_lib STATIC test.cpp ../include/lib/test.h)
 add_library(shared STATIC shared.cpp ../include/lib/shared.h)
 add_library(common STATIC common.cpp ../include/lib/common.h)
 

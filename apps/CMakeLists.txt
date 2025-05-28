@@ -2,7 +2,6 @@
 # custom target for OpenMP
 add_executable(openmp openmp.cpp)
 target_link_libraries(openmp PUBLIC  fmt shared)
-#target_compile_options(openmp PUBLIC -fopenmp)
 
 
 if(DEFINED ENV{BUILD_MPI} AND "$ENV{BUILD_MPI}" STREQUAL "true")

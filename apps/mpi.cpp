@@ -127,14 +127,6 @@ int main(int argc, char **argv) {
   const int n_x       = std::stoi(argv[4]);  // Number of spatial points
   const int n_t       = std::stoi(argv[5]);  // Number of time steps
 
-  // for (Conditions condition : test_cases) {
-  //   fmt::print("L: {}, alpha: {}, t_final: {}, n_x: {}, n_t: {}\n",
-  //   condition.L,
-  //              condition.alpha, condition.t_final, condition.n_x,
-  //              condition.n_t);
-  //   run(argc, argv, condition.L, condition.alpha, condition.t_final,
-  //       condition.n_x, condition.n_t);
-  // }
   run(argc, argv, L, alpha, t_final, n_x, n_t);
 
   return 0;
