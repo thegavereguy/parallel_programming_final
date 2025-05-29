@@ -333,7 +333,6 @@ void parallel2_implicit(Conditions conditions, float* input, float* output) {
     }
 
     // Forward sweep
-#pragma omp parallel for num_threads(2)
     for (int i = 1; i < conditions.n_x; ++i) {
       double m = a[i] / b_work[i - 1];
       b_work[i] -= m * c[i - 1];
@@ -343,7 +342,6 @@ void parallel2_implicit(Conditions conditions, float* input, float* output) {
     // Backward substitution
     output[conditions.n_x - 1] =
         d_work[conditions.n_x - 1] / b_work[conditions.n_x - 1];
-#pragma omp parallel for num_threads(2)
     for (int i = conditions.n_x - 2; i >= 0; --i) {
       output[i] = (d_work[i] - c[i] * output[i + 1]) / b_work[i];
     }
@@ -398,7 +396,6 @@ void parallel4_implicit(Conditions conditions, float* input, float* output) {
     }
 
     // Forward sweep
-#pragma omp parallel for num_threads(4)
     for (int i = 1; i < conditions.n_x; ++i) {
       double m = a[i] / b_work[i - 1];
       b_work[i] -= m * c[i - 1];
@@ -408,7 +405,6 @@ void parallel4_implicit(Conditions conditions, float* input, float* output) {
     // Backward substitution
     output[conditions.n_x - 1] =
         d_work[conditions.n_x - 1] / b_work[conditions.n_x - 1];
-#pragma omp parallel for num_threads(4)
     for (int i = conditions.n_x - 2; i >= 0; --i) {
       output[i] = (d_work[i] - c[i] * output[i + 1]) / b_work[i];
     }
@@ -463,7 +459,6 @@ void parallel8_implicit(Conditions conditions, float* input, float* output) {
     }
 
     // Forward sweep
-#pragma omp parallel for num_threads(8)
     for (int i = 1; i < conditions.n_x; ++i) {
       double m = a[i] / b_work[i - 1];
       b_work[i] -= m * c[i - 1];
@@ -473,7 +468,6 @@ void parallel8_implicit(Conditions conditions, float* input, float* output) {
     // Backward substitution
     output[conditions.n_x - 1] =
         d_work[conditions.n_x - 1] / b_work[conditions.n_x - 1];
-#pragma omp parallel for num_threads(8)
     for (int i = conditions.n_x - 2; i >= 0; --i) {
       output[i] = (d_work[i] - c[i] * output[i + 1]) / b_work[i];
     }
