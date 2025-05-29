@@ -2,9 +2,8 @@ add_executable(openmp openmp.cpp)
 target_link_libraries(openmp PUBLIC  fmt shared)
 
 
-if(DEFINED ENV{BUILD_MPI} AND "$ENV{BUILD_MPI}" STREQUAL "true")
-	message("building MPI solution")
-
+if(DEFINED ENV{BUILD_MPI} AND "$ENV{BUILD_MPI}" STREQUAL "true" OR true)
+	message(STATUS "building MPI solution")
 	find_package(MPI REQUIRED)
 	add_executable(mpi mpi.cpp)
 	target_link_libraries(mpi PUBLIC  fmt MPI::MPI_CXX common)

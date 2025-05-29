@@ -1,13 +1,10 @@
 #include <lib/shared.h>
 #include <omp.h>
 
-#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <utility>
 #include <vector>
-
-#include "fmt/base.h"
 
 void sequential_explicit(Conditions conditions, float* input, float* output) {
   output[0]                  = input[0];
@@ -594,7 +591,7 @@ void sequential_implicit_pcr(Conditions conditions, float* input,
   // Main time loop
   for (int n = 0; n < conditions.n_t - 1; ++n) {
     // Setup d from input and apply boundary conditions
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (int i = 1; i < n_x - 1; ++i) {
       d[i] = input[i];
     }
@@ -602,7 +599,7 @@ void sequential_implicit_pcr(Conditions conditions, float* input,
     d[n_x - 1] = input[n_x - 1];
 
     // Setup a, b, c and apply boundary conditions
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (int i = 1; i < n_x - 1; ++i) {
       a[i] = -r;
       b[i] = 1.0 + 2.0 * r;
@@ -623,7 +620,7 @@ void sequential_implicit_pcr(Conditions conditions, float* input,
       int stride = 1 << step;  // 2^step
 
       // Loop sulle equazioni (PARALLELO)
-      // #pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static)
       for (int i = 0; i < n_x; ++i) {
         // Controlla se l'indice è valido per questo passo
         bool has_left  = (i - stride >= 0);
@@ -681,7 +678,7 @@ void sequential_implicit_pcr(Conditions conditions, float* input,
     }  // Fine loop sui passi
 
     // Risolvi il sistema (ora diagonale o quasi) - PARALLELO
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (int i = 0; i < n_x; ++i) {
       if (std::abs(b[i]) > 1e-15) {
         output[i] = d[i] / b[i];
@@ -691,7 +688,7 @@ void sequential_implicit_pcr(Conditions conditions, float* input,
     }
 
     // Copia l'output nell'input per il prossimo passo temporale - PARALLELO
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (int i = 0; i < n_x; ++i) {
       input[i] = output[i];
     }

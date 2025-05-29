@@ -93,6 +93,28 @@ TEST_CASE("sequential SIMD - implicit - BENCH", "[seq_im_simd]") {
     };
   }
 }
+TEST_CASE("sequential PCR - implicit - BENCH", "[seq_im_pcr]") {
+  char* name = new char[100];
+
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
+    BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
+
+      meter.measure([conditions, input, output] {
+        return sequential_implicit_pcr(conditions.first, input, output);
+      });
+
+      delete[] input;
+      delete[] output;
+    };
+  }
+}
+
 TEST_CASE("parallel - 2 threads - explicit - BENCH", "[par2_ex]") {
   char* name = new char[100];
   for (auto conditions : target_cases) {

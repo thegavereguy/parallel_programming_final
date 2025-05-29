@@ -20,10 +20,10 @@ target_compile_options(shared PUBLIC -fopenmp)
 # endif()
 
 
-if(DEFINED ENV{BUILD_MPI} AND "$ENV{BUILD_MPI}" STREQUAL "true")
+#if(DEFINED ENV{BUILD_MPI} AND "$ENV{BUILD_MPI}" STREQUAL "true")
 	find_package(MPI REQUIRED)
 	add_library(distributed STATIC distributed.cpp ../include/lib/distributed.h)
-	target_link_libraries(distributed PUBLIC MPI::MPI_CXX fmt)
+	target_link_libraries(distributed PUBLIC mpi MPI::MPI_CXX )
 	target_include_directories(distributed PUBLIC ../include)
 	target_include_directories(distributed SYSTEM PUBLIC ${MPI_INCLUDE_PATH})
-endif()
+#endif()

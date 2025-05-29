@@ -1,11 +1,9 @@
-#include <fmt/base.h>
 #include <lib/distributed.h>
-#include <mpi.h>
 
 #include <utility>
 
-void heat_equation(float *input, float *output, int local_nx, int rank,
-                   int size, Conditions conditions) {
+void sequential_explicit(float *input, float *output, int local_nx, int rank,
+                         int size, Conditions conditions) {
   float dt = conditions.t_final / (conditions.n_t - 1);
   float dx = conditions.L / (conditions.n_x - 1);
 
@@ -26,16 +24,16 @@ void heat_equation(float *input, float *output, int local_nx, int rank,
                 &request[3]);  // Receive right neighbor
     }
 
-    fmt::print("rank = {}\n", rank);
-    // Compute internal grid points (excluding ghost cells)
+    // fmt::print("rank = {}\n", rank);
+    //  Compute internal grid points (excluding ghost cells)
     for (int i = 2; i < local_nx; i++) {
       output[i] =
           input[i] + conditions.alpha *
                          (input[i - 1] - 2.0 * input[i] + input[i + 1]) *
                          (dt / (dx * dx));
-      fmt::print("{} ", output[i]);
+      // fmt::print("{} ", output[i]);
     }
-    fmt::print("\n");
+    // fmt::print("\n");
 
     // Wait for communication to complete
     if (rank > 0) MPI_Waitall(2, request, MPI_STATUSES_IGNORE);

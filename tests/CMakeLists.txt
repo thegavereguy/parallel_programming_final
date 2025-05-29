@@ -8,8 +8,6 @@ if(DEFINED ENV{BUILD_MPI} AND "$ENV{BUILD_MPI}" STREQUAL "true")
 	# add_executable(mpi_bench mpi_bench.cpp)
 	# target_link_libraries(mpi_bench PUBLIC fmt Catch2::Catch2WithMain common)
 	# target_include_directories(mpi_bench PUBLIC ${MPI_CXX_INCLUDE_PATH})
-	# add_executable(gpu_tests gpu_tests.cpp)
-	# target_link_libraries(gpu_tests PUBLIC fmt Catch2::Catch2WithMain  common )
 endif()
 
 

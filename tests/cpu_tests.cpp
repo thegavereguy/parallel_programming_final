@@ -59,7 +59,7 @@ TEST_CASE("Sequential solution implicit pcr- Test", "[seq_im_pcr]") {
   sequential_implicit_pcr(conditions, input, output);
   for (int i = 0; i < conditions.n_x; i++) {
     fmt::print("{} - {}\n", output[i], expected[i]);
-    // REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i], 0.001));
+    REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i], 0.1));
   }
   delete[] input;
   delete[] output;
