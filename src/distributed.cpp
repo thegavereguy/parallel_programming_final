@@ -65,7 +65,7 @@ void sequential_explicit(float *input, float *output, int local_nx, int rank,
   }
 }
 
-void heat_equation_mpi_corrected(float *input, float *output, int local_nx,
+void mpi_ftcs(float *input, float *output, int local_nx,
                                  int rank, int size, float L, float alpha,
                                  float t_final, int n_x_global, int n_t_steps) {
   float dt     = t_final / (static_cast<float>(n_t_steps) - 1.0f);
@@ -128,7 +128,7 @@ void heat_equation_mpi_corrected(float *input, float *output, int local_nx,
   }
 }
 
-void run_mpi_corrected(int argc, char **argv, float L, float alpha,
+void run(int argc, char **argv, float L, float alpha,
                        float t_final, int n_x_global, int n_t_steps) {
   int rank, size;
 
@@ -187,7 +187,7 @@ void run_mpi_corrected(int argc, char **argv, float L, float alpha,
   double start_time = MPI_Wtime();
 
   if (local_nx > 0) {
-    heat_equation_mpi_corrected(input, output, local_nx, rank, size, L, alpha,
+    mpi_ftcs(input, output, local_nx, rank, size, L, alpha,
                                 t_final, n_x_global, n_t_steps);
   }
   MPI_Barrier(

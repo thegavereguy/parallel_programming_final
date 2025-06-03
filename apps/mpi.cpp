@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   const int n_x_val       = std::stoi(argv[4]);
   const int n_t_val       = std::stoi(argv[5]);
 
-  run_mpi_corrected(argc, argv, L_val, alpha_val, t_final_val, n_x_val,
+  run(argc, argv, L_val, alpha_val, t_final_val, n_x_val,
                     n_t_val);
 
   return 0;
