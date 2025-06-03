@@ -1,12 +1,11 @@
 #include <fmt/base.h>
 #include <lib/common.h>
-#include <openmpi-x86_64/mpi.h>
+#include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <string>
 #include <utility>
-#include <vector>
 
 void heat_equation_mpi_corrected(float *input, float *output, int local_nx,
                                  int rank, int size, float L, float alpha,
