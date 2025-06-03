@@ -155,6 +155,16 @@ void run_mpi_corrected(int argc, char **argv, float L, float alpha,
     fmt::print("{},{},{:.4f},{:.4f},{:.4f},{}\n", n_x_global, n_t_steps, millis,
                millis, millis, 1);
   }
+  for (int i = 0; i < size; ++i) {
+    if (rank == i) {
+      fmt::print("Rank {}: local_nx = {}\n", rank, local_nx);
+      for (int j = 0; j < local_nx; ++j) {
+        fmt::print("Rank {}: output[{}] = {:.4f}\n", rank, j + 1,
+                   output[j + 1]);
+      }
+    }
+    MPI_Barrier(MPI_COMM_WORLD);  // Sincronizza per evitare output misti
+  }
 
   if (local_nx > 0) {
     delete[] input;
@@ -166,9 +176,9 @@ void run_mpi_corrected(int argc, char **argv, float L, float alpha,
 int main(int argc, char **argv) {
   if (argc < 6) {
     // Stampato solo da rank 0 per evitare output multipli
-    if (MPI_Comm_rank(MPI_COMM_WORLD, &argc) == 0) {
-      fprintf(stderr, "Usage: %s <L> <alpha> <t_final> <n_x> <n_t>\n", argv[0]);
-    }
+    // if (MPI_Comm_rank(MPI_COMM_WORLD, &argc) == 0) {
+    fprintf(stderr, "Usage: %s <L> <alpha> <t_final> <n_x> <n_t>\n", argv[0]);
+    //}
     MPI_Finalize();
 
     return 1;
