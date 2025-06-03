@@ -1,8 +1,7 @@
 export BENCHMARK_CONFIDENCE_INTERVAL=0.30
 export BENCH_SAMPLES=2
-export BUILD_MPI=false
 export CLEAR_RESULTS=0
-export BUILD_OPTIMIZED=true
+export OPTIMIZATION_LEVEL=O2
 
 export PROJECT_ROOT=$(pwd)
 
@@ -17,19 +16,19 @@ else
   echo "Keeping previous results";
 fi
 
-# Print information about the cpu and gpu (which is somewhere in lspci)
+# Print information about the cpu
 lscpu > results/cpu_info.txt
 
 # Creta a build directory if it does not exist
 mkdir build > /dev/null
 cd build
 
-cmake ..  -DBUILD_VULKAN=${BUILD_VULKAN} -DBUILD_MPI=${BUILD_MPI} -DBUILD_ACC=${BUILD_ACC} -DDOWNLOAD_VULKAN_SDK=${DOWNLOAD_VULKAN_SDK} -DBUILD_OPTIMIZED=${BUILD_OPTIMIZED}
+cmake  -DOPTIMIZATION_LEVEL=${BUILD_OPTIMIZED} ..
 
 # Remove the previous build
 # make clean
 
-make all -j4
+make -j4
 cd ..
 
-sh $PROJECT_ROOT/scripts/run_benchmarks.sh
+# sh $PROJECT_ROOT/scripts/run_benchmarks.sh
