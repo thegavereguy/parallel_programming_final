@@ -1,6 +1,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 struct Conditions {
   const double L;
   const double alpha;

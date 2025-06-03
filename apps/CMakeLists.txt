@@ -7,9 +7,10 @@ if(DEFINED ENV{BUILD_MPI} AND "$ENV{BUILD_MPI}" STREQUAL "true" OR true)
 	message(STATUS "building MPI solution")
 	find_package(MPI REQUIRED)
 	add_executable(mpi mpi.cpp)
-	target_link_libraries(mpi PUBLIC  fmt MPI::MPI_CXX common)
-	target_include_directories(mpi PUBLIC ${MPI_CXX_INCLUDE_DIRS})
-	message(STATUS "MPI include directories: ${MPI_CXX_INCLUDE_DIRS}")
+	#target_link_libraries(mpi PUBLIC  fmt MPI::MPI_CXX common)
+	target_link_libraries(mpi PUBLIC distributed)
+	#target_include_directories(mpi PUBLIC ${MPI_CXX_INCLUDE_DIRS})
+	#message(STATUS "MPI include directories: ${MPI_CXX_INCLUDE_DIRS}")
 
 
 	# custom target to run mpi target with mpirun ( kind of useless and doesn't work)
