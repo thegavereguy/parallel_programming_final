@@ -76,7 +76,7 @@ TEST_CASE("Parallel2 inner solution - Test", "[par2_ex]") {
 
   for (int i = 0; i < conditions.n_x; i++) {
   }
-  sequential_unroll_explicit(conditions, input, output);
+  parallel_variable_explicit(conditions, input, output, 2);
   for (int i = 0; i < conditions.n_x; i++) {
     REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i], 0.001));
   }
@@ -93,7 +93,7 @@ TEST_CASE("Parallel4 inner solution - Test", "[par4_ex]") {
   input[conditions.n_x - 1] = 200;
 
   fmt::print("par4 solution\n");
-  sequential_unroll_explicit(conditions, input, output);
+  parallel_variable_explicit(conditions, input, output, 4);
   for (int i = 0; i < conditions.n_x; i++) {
     REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i], 0.001));
   }
@@ -111,7 +111,7 @@ TEST_CASE("Parallel8 inner solution - Test", "[par8_ex]") {
   input[0]                  = 100;
   input[conditions.n_x - 1] = 200;
 
-  parallel8_explicit(conditions, input, output);
+  parallel_variable_explicit(conditions, input, output, 8);
   for (int i = 0; i < conditions.n_x; i++) {
     REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i], 0.001));
   }

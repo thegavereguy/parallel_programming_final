@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include "fmt/base.h"
+
 void sequential_explicit(Conditions conditions, float* input, float* output) {
   output[0]                  = input[0];
   output[conditions.n_x - 1] = input[conditions.n_x - 1];
@@ -693,4 +695,24 @@ void sequential_implicit_pcr(Conditions conditions, float* input,
       input[i] = output[i];
     }
   }  // Fine time loop
+}
+
+void parallel_variable_explicit(Conditions conditions, float* input,
+                                float* output, int n_threads) {
+  omp_set_num_threads(n_threads);
+  fmt::print("Using {} threads for variable explicit method\n", n_threads);
+  output[0]                  = input[0];
+  output[conditions.n_x - 1] = input[conditions.n_x - 1];
+  float dt                   = conditions.t_final / (conditions.n_t - 1);
+  float dx                   = conditions.L / (conditions.n_x - 1);
+
+  for (int i = 0; i < conditions.n_t; i++) {
+#pragma omp parallel for
+    for (int j = 1; j < conditions.n_x - 1; j++) {
+      output[j] =
+          input[j] + conditions.alpha * (dt / (dx * dx)) *
+                         (input[j + 1] - 2 * input[j] + input[j - 1]);  // d^2u
+    }
+    std::swap(input, output);
+  }
 }

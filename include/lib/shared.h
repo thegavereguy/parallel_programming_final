@@ -19,3 +19,5 @@ void parallel2_implicit(Conditions, float*, float*);
 void parallel4_implicit(Conditions, float*, float*);
 void parallel8_implicit(Conditions, float*, float*);
 void sequential_implicit_simd(Conditions, float*, float*);
+
+void parallel_variable_explicit(Conditions, float*, float*, int);
