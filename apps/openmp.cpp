@@ -13,7 +13,7 @@ int main() {
   // Conditions conditions = {1.5, 0.035, 0.00025, 32768, 40000};
   // Conditions conditions = {1.0, 0.5, 0.01, 16, 30};
 
-  Conditions conditions = target_cases[9].first;
+  Conditions conditions = target_cases[13].first;
 
   float* input              = new float[conditions.n_x];
   input[0]                  = 100;
@@ -22,7 +22,8 @@ int main() {
   struct timespec start, end;
   clock_gettime(CLOCK_MONOTONIC, &start);
 
-  parallel4_implicit(conditions, input, output);
+  // parallel4_implicit(conditions, input, output);
+  parallel_variable_explicit(conditions, input, output, 8);
 
   // clock_gettime(CLOCK_MONOTONIC, &end);
   // long seconds_ts              = end.tv_sec - start.tv_sec;

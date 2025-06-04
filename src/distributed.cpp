@@ -65,9 +65,9 @@ void sequential_explicit(float *input, float *output, int local_nx, int rank,
   }
 }
 
-void mpi_ftcs(float *input, float *output, int local_nx,
-                                 int rank, int size, float L, float alpha,
-                                 float t_final, int n_x_global, int n_t_steps) {
+void mpi_ftcs(float *input, float *output, int local_nx, int rank, int size,
+              float L, float alpha, float t_final, int n_x_global,
+              int n_t_steps) {
   float dt     = t_final / (static_cast<float>(n_t_steps) - 1.0f);
   float dx     = L / (static_cast<float>(n_x_global) - 1.0f);
   float factor = alpha * dt / (dx * dx);
@@ -128,8 +128,8 @@ void mpi_ftcs(float *input, float *output, int local_nx,
   }
 }
 
-void run(int argc, char **argv, float L, float alpha,
-                       float t_final, int n_x_global, int n_t_steps) {
+void run_single(int argc, char **argv, float L, float alpha, float t_final,
+                int n_x_global, int n_t_steps) {
   int rank, size;
 
   MPI_Init(&argc, &argv);
@@ -187,8 +187,8 @@ void run(int argc, char **argv, float L, float alpha,
   double start_time = MPI_Wtime();
 
   if (local_nx > 0) {
-    mpi_ftcs(input, output, local_nx, rank, size, L, alpha,
-                                t_final, n_x_global, n_t_steps);
+    mpi_ftcs(input, output, local_nx, rank, size, L, alpha, t_final, n_x_global,
+             n_t_steps);
   }
   MPI_Barrier(
       MPI_COMM_WORLD);  // Sincronizza prima di fermare il cronometraggio
@@ -213,20 +213,98 @@ void run(int argc, char **argv, float L, float alpha,
     fmt::print("{},{},{:.4f},{:.4f},{:.4f},{}\n", n_x_global, n_t_steps, millis,
                millis, millis, 1);
   }
-  for (int i = 0; i < size; ++i) {
-    if (rank == i) {
-      fmt::print("Rank {}: local_nx = {}\n", rank, local_nx);
-      for (int j = 0; j < local_nx; ++j) {
-        fmt::print("Rank {}: output[{}] = {:.4f}\n", rank, j + 1,
-                   output[j + 1]);
-      }
-    }
-    MPI_Barrier(MPI_COMM_WORLD);  // Sincronizza per evitare output misti
-  }
+  // for (int i = 0; i < size; ++i) {
+  //   if (rank == i) {
+  //     fmt::print("Rank {}: local_nx = {}\n", rank, local_nx);
+  //     for (int j = 0; j < local_nx; ++j) {
+  //       fmt::print("Rank {}: output[{}] = {:.4f}\n", rank, j + 1,
+  //                  output[j + 1]);
+  //     }
+  //   }
+  //   MPI_Barrier(MPI_COMM_WORLD);  // Sincronizza per evitare output misti
+  // }
 
   if (local_nx > 0) {
     delete[] input;
     delete[] output;
   }
   MPI_Finalize();
+}
+void run_multiple(std::string name, float L, float alpha, float t_final,
+                  int n_x_global, int n_t_steps) {
+  int rank, size;
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+  int local_nx  = n_x_global / size;
+  int remainder = n_x_global % size;
+  if (rank < remainder) {
+    local_nx++;
+  }
+
+  float *input  = nullptr;
+  float *output = nullptr;
+
+  if (local_nx > 0) {
+    input  = new float[local_nx + 2];
+    output = new float[local_nx + 2];
+
+    int my_global_idx_start = 0;
+    for (int r_iter = 0; r_iter < rank; ++r_iter) {
+      my_global_idx_start += (n_x_global / size) + (r_iter < remainder ? 1 : 0);
+    }
+
+    for (int i = 1; i <= local_nx; i++) {
+      int current_point_global_idx =
+          my_global_idx_start + (i - 1);  // Indice globale 0-based
+
+      if (current_point_global_idx == 0) {
+        input[i] = 100.0f;
+      } else if (current_point_global_idx == n_x_global - 1) {
+        input[i] = 200.0f;
+      } else {
+        input[i] = 0.0f;
+      }
+    }
+
+    input[0]            = 0.0f;  // Ghost cell sinistro
+    input[local_nx + 1] = 0.0f;  // Ghost cell destro
+
+    for (int i = 0; i < local_nx + 2; ++i) {
+      output[i] = 0.0f;
+    }
+  }
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  double start_time = MPI_Wtime();
+
+  if (local_nx > 0) {
+    mpi_ftcs(input, output, local_nx, rank, size, L, alpha, t_final, n_x_global,
+             n_t_steps);
+  }
+  MPI_Barrier(
+      MPI_COMM_WORLD);  // Sincronizza prima di fermare il cronometraggio
+  double end_time = MPI_Wtime();
+
+  if (rank == 0) {
+    float millis = static_cast<float>((end_time - start_time) * 1000.0);
+    fmt::print("{},{},{},{:.4f},{:.4f},{:.4f},{}\n", name, n_x_global,
+               n_t_steps, millis, millis, millis, 1);
+  }
+  // for (int i = 0; i < size; ++i) {
+  //   if (rank == i) {
+  //     fmt::print("Rank {}: local_nx = {}\n", rank, local_nx);
+  //     for (int j = 0; j < local_nx; ++j) {
+  //       fmt::print("Rank {}: output[{}] = {:.4f}\n", rank, j + 1,
+  //                  output[j + 1]);
+  //     }
+  //   }
+  //   MPI_Barrier(MPI_COMM_WORLD);  // Sincronizza per evitare output misti
+  // }
+
+  if (local_nx > 0) {
+    delete[] input;
+    delete[] output;
+  }
 }
