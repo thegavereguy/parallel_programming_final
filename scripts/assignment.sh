@@ -1,7 +1,7 @@
 export BENCHMARK_CONFIDENCE_INTERVAL=0.30
 export BENCH_SAMPLES=2
 export CLEAR_RESULTS=0
-export OPTIMIZATION_LEVEL=O2
+export OPTIMIZATION_LEVEL=O3
 
 export PROJECT_ROOT=$(pwd)
 
@@ -23,7 +23,7 @@ lscpu > results/cpu_info.txt
 mkdir build > /dev/null
 cd build
 
-cmake  -DOPTIMIZATION_LEVEL=${BUILD_OPTIMIZED} ..
+cmake  -DOPTIMIZATION_LEVEL=${OPTIMIZATION_LEVEL} ..
 
 # Remove the previous build
 # make clean

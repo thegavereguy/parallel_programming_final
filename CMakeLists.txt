@@ -7,7 +7,6 @@ Include(FetchContent)
 
 option(ENABLE_OPTIMIZATION "Enable compiler optimizations" ON)
 set(OPTIMIZATION_LEVEL "O3" CACHE STRING "Compiler optimization level (e.g., O0, O1, O2, O3, Os, Ofast)")
-set_property(CACHE OPTIMIZATION_LEVEL PROPERTY STRINGS O0 O1 O2 O3 Os Ofast) # Suggerisce valori validi nell'interfaccia grafica di CMake
 
 if(NOT CMAKE_BUILD_TYPE)
     # default to Release if CMAKE_BUILD_TYPE is not set externally
@@ -17,11 +16,11 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if(ENABLE_OPTIMIZATION)
-        string(TOUPPER "${OPTIMIZATION_LEVEL}" OPTIMIZATION_LEVEL_UPPER)
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -${OPTIMIZATION_LEVEL_UPPER}")
-        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -${OPTIMIZATION_LEVEL_UPPER}")
-        set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -${OPTIMIZATION_LEVEL_UPPER}")
-        message(STATUS "Using optimization level: -${OPTIMIZATION_LEVEL_UPPER}")
+			# string(TOUPPER "${OPTIMIZATION_LEVEL}" OPTIMIZATION_LEVEL_UPPER) # rompe tutto quando si usa -Ofast
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -${OPTIMIZATION_LEVEL}")
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -${OPTIMIZATION_LEVEL}")
+        set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -${OPTIMIZATION_LEVEL}")
+        message(STATUS "Using optimization level: -${OPTIMIZATION_LEVEL}")
     else()
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O0")
         set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O0")
@@ -30,8 +29,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     endif()
 
     # Aggiungi altre flag comuni per ottimizzazione e debug se necessario
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG") # Disabilita assert in release
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g") # Abilita debug symbols
+	# TODO: provare a togliere durante testing
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG") 
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 endif()
 
 add_subdirectory(src)

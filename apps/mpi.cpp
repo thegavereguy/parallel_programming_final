@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     const std::vector<std::pair<Conditions, std::string>> t = {
         {{1, .5, 0.01, 16, 30}, "test"}};
 
-    for (auto c : t) {
+    for (auto c : target_cases) {
       float L_val       = c.first.L;
       float alpha_val   = c.first.alpha;
       float t_final_val = c.first.t_final;
