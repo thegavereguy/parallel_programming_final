@@ -11,7 +11,7 @@
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include <catch2/reporters/catch_reporter_streaming_base.hpp>
 
-TEST_CASE("Sequential solution - Test", "[seq_ex]") {
+TEST_CASE("Sequential solution explicit - Test", "[seq_ex]") {
   Conditions conditions = {1, 0.5, 0.01, 16, 30};
   float* input          = new float[conditions.n_x];
   float* output         = new float[conditions.n_x];
@@ -46,7 +46,7 @@ TEST_CASE("Sequential solution implicit - Test", "[seq_im]") {
   delete[] input;
   delete[] output;
 }
-TEST_CASE("Sequential solution implicit pcr- Test", "[seq_im_pcr]") {
+TEST_CASE("Sequential solution implicit PCR- Test", "[seq_im_pcr]") {
   Conditions conditions = {1, 0.5, 0.01, 16, 30};
   float* input          = new float[conditions.n_x];
   float* output         = new float[conditions.n_x];
@@ -64,7 +64,7 @@ TEST_CASE("Sequential solution implicit pcr- Test", "[seq_im_pcr]") {
   delete[] input;
   delete[] output;
 }
-TEST_CASE("Parallel2 inner solution - Test", "[par2_ex]") {
+TEST_CASE("Parallel solution - 2 threads - explicit - Test", "[par2_ex]") {
   Conditions conditions = {1, 0.5, 0.01, 16, 30};
   float* input          = new float[conditions.n_x];
   float* output         = new float[conditions.n_x];
@@ -83,7 +83,7 @@ TEST_CASE("Parallel2 inner solution - Test", "[par2_ex]") {
   delete[] input;
   delete[] output;
 }
-TEST_CASE("Parallel4 inner solution - Test", "[par4_ex]") {
+TEST_CASE("Parallel solution - 4 threads - explicit - Test", "[par4_ex]") {
   Conditions conditions = {1, 0.5, 0.01, 16, 30};
   float* input          = new float[conditions.n_x];
   float* output         = new float[conditions.n_x];
@@ -92,7 +92,7 @@ TEST_CASE("Parallel4 inner solution - Test", "[par4_ex]") {
   input[0]                  = 100;
   input[conditions.n_x - 1] = 200;
 
-  fmt::print("par4 solution\n");
+  // fmt::print("par4 solution\n");
   parallel_variable_explicit(conditions, input, output, 4);
   for (int i = 0; i < conditions.n_x; i++) {
     REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i], 0.001));
@@ -102,7 +102,7 @@ TEST_CASE("Parallel4 inner solution - Test", "[par4_ex]") {
   delete[] output;
 }
 
-TEST_CASE("Parallel8 inner solution - Test", "[par8_ex]") {
+TEST_CASE("Parallel solution - 8 threads - explicit - Test", "[par8_ex]") {
   Conditions conditions = {1, 0.5, 0.01, 16, 30};
   float* input          = new float[conditions.n_x];
   float* output         = new float[conditions.n_x];
@@ -119,58 +119,24 @@ TEST_CASE("Parallel8 inner solution - Test", "[par8_ex]") {
   delete[] output;
 }
 
-// TEST_CASE("Parallel2 outer solution - Test", "[par2_out]") {
-//   Conditions conditions = {1, 0.5, 0.1, 16, 30};
+// TEST_CASE("Parallel 4 alligned solution - Test", "[par4_all_ex]") {
+//   Conditions conditions = {1, 0.5, 0.01, 16, 30};
 //   float* input          = new float[conditions.n_x];
 //   float* output         = new float[conditions.n_x];
 //   initialize_array(input, conditions.n_x);
 //   initialize_array(output, conditions.n_x);
 //   input[0]                  = 100;
 //   input[conditions.n_x - 1] = 200;
-//
-//   parallel2_outer(conditions, input, output);
+//   parallel4_alligned_explicit(conditions, input, output);
 //   for (int i = 0; i < conditions.n_x; i++) {
-//     REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i],
-//     0.001));
+//     REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i], 0.001));
 //   }
 //   delete[] input;
 //   delete[] output;
 // }
-//
-// TEST_CASE("Sequential unrolled solution - Test", "[seq_unr]") {
-//   Conditions conditions = {1, 0.5, 0.1, 16, 30};
-//   float* input          = new float[conditions.n_x];
-//   float* output         = new float[conditions.n_x];
-//   initialize_array(input, conditions.n_x);
-//   initialize_array(output, conditions.n_x);
-//   input[0]                  = 100;
-//   input[conditions.n_x - 1] = 200;
-//   sequential_unroll(conditions, input, output);
-//   for (int i = 0; i < conditions.n_x; i++) {
-//     fmt::print("{} ", output[i]);
-//     // REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i],
-//     0.001));
-//   }
-//   delete[] input;
-//   delete[] output;
-// }
-TEST_CASE("Par 4 alligned solution - Test", "[par4_all_ex]") {
-  Conditions conditions = {1, 0.5, 0.01, 16, 30};
-  float* input          = new float[conditions.n_x];
-  float* output         = new float[conditions.n_x];
-  initialize_array(input, conditions.n_x);
-  initialize_array(output, conditions.n_x);
-  input[0]                  = 100;
-  input[conditions.n_x - 1] = 200;
-  parallel4_alligned_explicit(conditions, input, output);
-  for (int i = 0; i < conditions.n_x; i++) {
-    REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i], 0.001));
-  }
-  delete[] input;
-  delete[] output;
-}
 
-TEST_CASE("Sequential Unroll solution - Test", "[seq_unr_ex]") {
+TEST_CASE("Sequential solution - loop unroll - explicit - Test",
+          "[seq_unr_ex]") {
   Conditions conditions = {1, 0.5, 0.01, 16, 30};
   float* input          = new float[conditions.n_x];
   float* output         = new float[conditions.n_x];
