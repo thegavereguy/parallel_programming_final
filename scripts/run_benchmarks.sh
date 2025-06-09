@@ -29,6 +29,6 @@ n=(1 2 4)
 
 for iter in "${n[@]}"; do
 	echo "Running MPI benchmark for $iter processes"
-	mpirun -np $iter ../apps/mpi >>"$PROJECT_ROOT/results/mpi_$iter.csv"
+	mpirun -np $iter ../apps/mpi $BENCHMARK_SAMPLES >"$PROJECT_ROOT/results/mpi_$iter.csv"
 	# valutare se si riesce a spostare l'eseguibile in /build/tests
 done

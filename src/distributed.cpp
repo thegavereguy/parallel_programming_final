@@ -230,8 +230,8 @@ void run_single(int argc, char **argv, float L, float alpha, float t_final,
   }
   MPI_Finalize();
 }
-void run_multiple(std::string name, float L, float alpha, float t_final,
-                  int n_x_global, int n_t_steps) {
+float run_multiple(float L, float alpha, float t_final, int n_x_global,
+                   int n_t_steps) {
   int rank, size;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -289,8 +289,9 @@ void run_multiple(std::string name, float L, float alpha, float t_final,
 
   if (rank == 0) {
     float millis = static_cast<float>((end_time - start_time) * 1000.0);
-    fmt::print("{},{},{},{:.4f},{:.4f},{:.4f},{}\n", name, n_x_global,
-               n_t_steps, millis, millis, millis, 1);
+    // fmt::print("{},{},{},{:.4f},{:.4f},{:.4f},{}\n", name, n_x_global,
+    // n_t_steps, millis, millis, millis, 1);
+    return millis;
   }
   // for (int i = 0; i < size; ++i) {
   //   if (rank == i) {
@@ -307,4 +308,5 @@ void run_multiple(std::string name, float L, float alpha, float t_final,
     delete[] input;
     delete[] output;
   }
+  return 0.0f;  // Non dovrebbe mai essere raggiunto, ma per evitare warning
 }
