@@ -34,6 +34,18 @@ const std::vector<std::pair<Conditions, std::string>> target_cases = {
     {{1, .05, 1.0, 50000, 400}, "Massive_Spatial_Resolution_2"},
     {{1, .05, 1.0, 100000, 400}, "Massive_Spatial_Resolution_3"},
     {{1, .05, 10.0, 8192, 10000}, "Very_Large_Problem_1"},
+    {{L_PER_UNIT * 1, ALPHA, T_FINAL, (NX_INTERVALS * 1) + 1, NT},
+     "WeakScaling_P1"},
+    {{L_PER_UNIT * 2, ALPHA, T_FINAL, (NX_INTERVALS * 2) + 1, NT},
+     "WeakScaling_P2"},
+    {{L_PER_UNIT * 4, ALPHA, T_FINAL, (NX_INTERVALS * 4) + 1, NT},
+     "WeakScaling_P4"},
+    {{L_PER_UNIT * 8, ALPHA, T_FINAL, (NX_INTERVALS * 8) + 1, NT},
+     "WeakScaling_P8"},
+    {{L_PER_UNIT * 16, ALPHA, T_FINAL, (NX_INTERVALS * 16) + 1, NT},
+     "WeakScaling_P16"},
+    {{L_PER_UNIT * 32, ALPHA, T_FINAL, (NX_INTERVALS * 32) + 1, NT},
+     "WeakScaling_P32"},
 
     // temporarily disabled due to long execution time
     // {{1, .05, 10.0, 16384, 20000}, "Very_Large_Problem_2"},
