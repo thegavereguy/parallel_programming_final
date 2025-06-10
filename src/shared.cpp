@@ -697,6 +697,71 @@ void sequential_implicit_pcr(Conditions conditions, float* input,
   }  // Fine time loop
 }
 
+void parallel_variable_implicit(Conditions conditions, float* input,
+                                float* output, int n_threads) {
+  omp_set_num_threads(n_threads);
+  float dt = conditions.t_final / (conditions.n_t - 1);
+  float dx = conditions.L / (conditions.n_x - 1);
+
+  // Coefficient for the scheme
+  const double r = conditions.alpha * dt / (dx * dx);
+  // fmt::print("r = {}\n", r);
+
+  std::vector<double> a(conditions.n_x, -r);             // lower diagonal
+  std::vector<double> b(conditions.n_x, 1.0 + 2.0 * r);  // main diagonal
+  std::vector<double> c(conditions.n_x, -r);             // upper diagonal
+  std::vector<double> d(conditions.n_x);                 // right-hand side
+
+  std::vector<double> b_work(conditions.n_x);
+  std::vector<double> d_work(conditions.n_x);
+
+  // Set boundary conditions
+  a[0] = 0.0;
+  c[0] = 0.0;
+  b[0] = 1.0;
+
+  a[conditions.n_x - 1] = 0.0;
+  c[conditions.n_x - 1] = 0.0;
+  b[conditions.n_x - 1] = 1.0;
+
+  for (int n = 0; n < conditions.n_t; ++n) {
+#pragma omp parallel for
+    for (int i = 1; i < conditions.n_x - 1; ++i) {
+      d[i] = input[i];
+    }
+
+    // Apply boundary conditions
+    d[0]                  = input[0];
+    d[conditions.n_x - 1] = input[conditions.n_x - 1];
+
+    // Create working copies for Thomas algorithm
+#pragma omp parallel for
+    for (int i = 0; i < conditions.n_x; ++i) {
+      b_work[i] = b[i];
+      d_work[i] = d[i];
+    }
+
+    // Forward sweep
+    for (int i = 1; i < conditions.n_x; ++i) {
+      double m = a[i] / b_work[i - 1];
+      b_work[i] -= m * c[i - 1];
+      d_work[i] -= m * d_work[i - 1];
+    }
+
+    // Backward substitution
+    output[conditions.n_x - 1] =
+        d_work[conditions.n_x - 1] / b_work[conditions.n_x - 1];
+    for (int i = conditions.n_x - 2; i >= 0; --i) {
+      output[i] = (d_work[i] - c[i] * output[i + 1]) / b_work[i];
+    }
+
+#pragma omp parallel for
+    // Update solution for next time step
+    for (int i = 0; i < conditions.n_x; ++i) {
+      input[i] = output[i];
+    }
+  }
+}
 void parallel_variable_explicit(Conditions conditions, float* input,
                                 float* output, int n_threads) {
   omp_set_num_threads(n_threads);

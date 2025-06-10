@@ -128,7 +128,7 @@ TEST_CASE("parallel - 2 threads - explicit - BENCH", "[omp_2_ex]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel2_explicit(conditions.first, input, output);
+        return parallel_variable_explicit(conditions.first, input, output, 2);
       });
 
       delete[] input;
@@ -149,7 +149,7 @@ TEST_CASE("parallel - 2 threads - implicit - BENCH", "[omp_2_im]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel2_implicit(conditions.first, input, output);
+        return parallel_variable_implicit(conditions.first, input, output, 2);
       });
 
       delete[] input;
@@ -171,7 +171,7 @@ TEST_CASE("parallel - 4 threads - explicit - BENCH", "[omp_4_ex]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel4_explicit(conditions.first, input, output);
+        return parallel_variable_explicit(conditions.first, input, output, 4);
       });
 
       delete[] input;
@@ -192,7 +192,7 @@ TEST_CASE("parallel - 4 threads - implicit - BENCH", "[omp_4_im]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel4_implicit(conditions.first, input, output);
+        return parallel_variable_implicit(conditions.first, input, output, 4);
       });
 
       delete[] input;
@@ -213,7 +213,7 @@ TEST_CASE("parallel - 8 threads - explicit - BENCH", "[omp_8_ex]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel8_explicit(conditions.first, input, output);
+        return parallel_variable_explicit(conditions.first, input, output, 8);
       });
 
       delete[] input;
@@ -234,7 +234,7 @@ TEST_CASE("parallel - 8 threads - implicit - BENCH", "[omp_8_im]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel8_explicit(conditions.first, input, output);
+        return parallel_variable_implicit(conditions.first, input, output, 8);
       });
 
       delete[] input;
@@ -256,7 +256,7 @@ TEST_CASE("parallel - 16 threads - explicit - BENCH", "[omp_16_ex]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel8_explicit(conditions.first, input, output);
+        return parallel_variable_explicit(conditions.first, input, output, 16);
       });
 
       delete[] input;
@@ -277,7 +277,7 @@ TEST_CASE("parallel - 16 threads - implicit - BENCH", "[omp_16_im]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel8_explicit(conditions.first, input, output);
+        return parallel_variable_implicit(conditions.first, input, output, 16);
       });
 
       delete[] input;
@@ -298,7 +298,7 @@ TEST_CASE("parallel - 32 threads - explicit - BENCH", "[omp_32_ex]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel8_explicit(conditions.first, input, output);
+        return parallel_variable_explicit(conditions.first, input, output, 32);
       });
 
       delete[] input;
@@ -319,7 +319,7 @@ TEST_CASE("parallel - 32 threads - implicit - BENCH", "[omp_32_im]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return parallel8_explicit(conditions.first, input, output);
+        return parallel_variable_implicit(conditions.first, input, output, 32);
       });
 
       delete[] input;
