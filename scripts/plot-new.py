@@ -4,10 +4,16 @@ import matplotlib.pyplot as plt
 import glob
 import os
 import re
+import numpy as np
 
 RESULTS_DIR = "results"
 PLOTS_DIR = "plots"
+
+# FLOPS per punto della griglia per ogni timestep
 FLOPS_PER_POINT = 3
+
+PEAK_PERFORMANCE = 2500.0
+MEMORY_BANDWIDTH = 180.0
 
 
 def parse_filename(filename):
@@ -67,8 +73,6 @@ def load_and_process_data(folder):
         name_col = row.get("NAME", "")
         nx_val = row["NX"]
         nt_val = row["NT"]
-
-        # Cerca i nomi scrittivi dai benchmark CPU. Formato atteso: "Nome_Test,NX,NT"
         if pd.notna(name_col) and isinstance(name_col, str):
             descriptive_name = name_col.strip().replace("_", " ")
             return f"{descriptive_name}\n(NX={nx_val} NT={nt_val})"
@@ -77,26 +81,23 @@ def load_and_process_data(folder):
 
     full_df["TestCaseLabel"] = full_df.apply(get_test_case_label, axis=1)
 
-    full_df["GFLOPs/s"] = (
-        (full_df["NX"] * full_df["NT"] * FLOPS_PER_POINT)
-        / (full_df["MEAN"] * 1e-3)
-        / 1e9
-    )
+    total_flops = full_df["NX"] * full_df["NT"] * FLOPS_PER_POINT
+    full_df["GFLOPs/s"] = (total_flops / (full_df["MEAN"] * 1e-3)) / 1e9
+
+    bytes_per_point = 2 * 8
+    total_bytes = full_df["NX"] * full_df["NT"] * bytes_per_point
+    full_df["Arithmetic Intensity"] = total_flops.divide(total_bytes).fillna(0)
 
     full_df = full_df[full_df["method_base"] != "Unknown"].copy()
-
     return full_df
 
 
 def plot_performance_barchart(df, save_path):
     df_sorted = df.sort_values(by=["NX", "units"])
-
     plt.style.use("seaborn-v0_8-whitegrid")
     plt.figure(figsize=(20, 12))
-
     unique_implementations = df_sorted["Implementation"].nunique()
     palette = sns.color_palette("tab20", n_colors=unique_implementations)
-
     ax = sns.barplot(
         data=df_sorted,
         x="TestCaseLabel",
@@ -104,27 +105,20 @@ def plot_performance_barchart(df, save_path):
         hue="Implementation",
         palette=palette,
     )
-
     ax.set_title("Confronto Performance per Caso di Test", fontsize=20, pad=20)
     ax.set_xlabel("Caso di Test", fontsize=16)
     ax.set_ylabel("Performance (GFLOPs/s)", fontsize=16)
-
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, ha="right", fontsize=11)
-
     plt.yscale("log")
     plt.legend(title="Implementazione", fontsize=12)
     plt.grid(True, which="both", ls="--")
     plt.tight_layout()
-
     plt.savefig(save_path)
     print(f"Grafico a barre delle performance salvato in: {save_path}")
     plt.close()
 
 
 def plot_strong_scaling_speedup(df, save_path):
-    """
-    Genera un grafico dello speedup rispetto alla versione a 1 unità.
-    """
     baselines = df[df["units"] == 1].copy()
     if baselines.empty:
         print(
@@ -132,10 +126,12 @@ def plot_strong_scaling_speedup(df, save_path):
         )
         return
 
-    baseline_map = baselines.set_index(["method_base", "NX"])["MEAN"].to_dict()
-    df_speedup = df[df["units"] > 1].copy()
+    baseline_map = baselines.set_index(["TestCaseLabel", "method_base"])[
+        "MEAN"
+    ].to_dict()
+    df_speedup = df[df["units"] > 0].copy()
     df_speedup["BaselineTime"] = df_speedup.apply(
-        lambda row: baseline_map.get((row["method_base"], row["NX"])), axis=1
+        lambda row: baseline_map.get((row["TestCaseLabel"], row["method_base"])), axis=1
     )
     df_speedup.dropna(subset=["BaselineTime"], inplace=True)
 
@@ -146,13 +142,23 @@ def plot_strong_scaling_speedup(df, save_path):
         return
 
     df_speedup["Speedup"] = df_speedup["BaselineTime"] / df_speedup["MEAN"]
+    test_cases_with_speedup = df_speedup[df_speedup["units"] > 1][
+        "TestCaseLabel"
+    ].unique()
+
+    if len(test_cases_with_speedup) == 0:
+        print("Nessun dato di speedup valido da plottare.")
+        return
+
+    df_to_plot = df_speedup[df_speedup["TestCaseLabel"].isin(test_cases_with_speedup)]
+    df_to_plot = df_to_plot.sort_values(by="units").copy()
 
     plt.style.use("seaborn-v0_8-whitegrid")
     g = sns.FacetGrid(
-        df_speedup,
-        col="NX",
+        df_to_plot,
+        col="TestCaseLabel",
         hue="method_base",
-        col_wrap=4,
+        col_wrap=3,
         height=5,
         sharey=False,
         legend_out=True,
@@ -160,30 +166,77 @@ def plot_strong_scaling_speedup(df, save_path):
     g.map(plt.plot, "units", "Speedup", marker="o", ms=8)
 
     for ax in g.axes.flat:
-        title_text = ax.get_title()
-        try:
-            nx_val = float(re.search(r"NX = ([\d.]+)", title_text).group(1))
-            max_units_for_nx = df_speedup[df_speedup.NX == nx_val]["units"].max()
-            ax.plot(
-                [1, max_units_for_nx],
-                [1, max_units_for_nx],
-                "k--",
-                label="Speedup Ideale",
-            )
-        except (AttributeError, ValueError):
-            # se no riesce a parsare il titolo salta la linea ideale per quel subplot
-            pass
+        ax.plot(
+            [1, 32],
+            [1, 32],
+            "k--",
+            zorder=1,
+            label="Speedup Ideale",
+        )
 
     g.add_legend(title="Metodo Base")
     g.set_axis_labels("Numero di Unità (Thread/Processi)", "Speedup")
-    g.set_titles("NX = {col_name}")
-    g.fig.suptitle(
-        "Strong Scaling Speedup per Dimensione del Problema", y=1.03, fontsize=16
-    )
-
+    g.set_titles("{col_name}")
+    g.fig.suptitle("Strong Scaling Speedup per Caso di Test", y=1.03, fontsize=16)
     plt.tight_layout(rect=[0, 0, 1, 0.97])
     plt.savefig(save_path)
-    print(f"Grafico dello speedup salvato in: {save_path}")
+    print(f"Grafico dello speedup per Test Case salvato in: {save_path}")
+    plt.close()
+
+
+def plot_roofline_model(df, peak_performance, memory_bandwidth, save_path):
+    plt.style.use("seaborn-v0_8-whitegrid")
+    fig, ax = plt.subplots(figsize=(12, 9))
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlabel("Intensità Aritmetica (FLOP/Byte)", fontsize=14)
+    ax.set_ylabel("Performance (GFLOPs/s)", fontsize=14)
+    ax.set_title("Roofline Model", fontsize=18, pad=20)
+
+    ai_range = np.logspace(-2, 4, 100)
+    ai_knee = peak_performance / memory_bandwidth
+    performance_roof = np.minimum(peak_performance, memory_bandwidth * ai_range)
+
+    ax.plot(ai_range, performance_roof, color="black", lw=2, label="Tetto Teorico")
+    ax.text(
+        ai_range[-1],
+        peak_performance,
+        f"π = {peak_performance:.1f} GFLOP/s",
+        ha="right",
+        va="bottom",
+        fontsize=12,
+    )
+    ax.text(
+        ai_range[0],
+        memory_bandwidth * ai_range[0] * 1.2,
+        f"β = {memory_bandwidth:.1f} GB/s",
+        ha="left",
+        va="bottom",
+        fontsize=12,
+        rotation=40,
+        rotation_mode="anchor",
+    )
+
+    sns.scatterplot(
+        data=df,
+        x="Arithmetic Intensity",
+        y="GFLOPs/s",
+        hue="Implementation",
+        ax=ax,
+        style="TestCaseLabel",
+        s=150,
+        zorder=10,
+    )
+
+    ax.grid(True, which="both", ls="--")
+    ax.legend(
+        title="Implementazione / Caso di Test",
+        bbox_to_anchor=(1.05, 1),
+        loc="upper left",
+    )
+    plt.tight_layout(rect=[0, 0, 0.8, 1])
+    plt.savefig(save_path)
+    print(f"Grafico Roofline Model salvato in: {save_path}")
     plt.close()
 
 
@@ -199,7 +252,15 @@ def main():
     print("Dati caricati ed elaborati con successo. Riepilogo:")
     print(
         full_df[
-            ["TestCaseLabel", "Implementation", "units", "NX", "MEAN", "GFLOPs/s"]
+            [
+                "TestCaseLabel",
+                "Implementation",
+                "units",
+                "NX",
+                "MEAN",
+                "GFLOPs/s",
+                "Arithmetic Intensity",
+            ]
         ].round(2)
     )
 
@@ -208,6 +269,12 @@ def main():
     )
     plot_strong_scaling_speedup(
         full_df, os.path.join(PLOTS_DIR, "strong_scaling_speedup.png")
+    )
+    plot_roofline_model(
+        full_df,
+        PEAK_PERFORMANCE,
+        MEMORY_BANDWIDTH,
+        os.path.join(PLOTS_DIR, "roofline_model.png"),
     )
 
 
