@@ -6,6 +6,7 @@ import os
 import re
 import numpy as np
 
+
 RESULTS_DIR = "results"
 PLOTS_DIR = "plots"
 
@@ -119,10 +120,12 @@ def plot_performance_barchart(df, save_path):
 
 
 def plot_strong_scaling_speedup(df, save_path):
+    df = df[~df["NAME"].str.contains("Weak", case=False, na=False)].copy()
+
     baselines = df[df["units"] == 1].copy()
     if baselines.empty:
         print(
-            "Nessuna esecuzione di base (1 thread/processo) trovata. Impossibile calcolare lo speedup."
+            "Nessuna esecuzione di base (1 thread/processo) trovata per lo Strong Scaling."
         )
         return
 
@@ -136,9 +139,7 @@ def plot_strong_scaling_speedup(df, save_path):
     df_speedup.dropna(subset=["BaselineTime"], inplace=True)
 
     if df_speedup.empty:
-        print(
-            "Nessuna corrispondenza trovata tra esecuzioni parallele e di base. Impossibile calcolare lo speedup."
-        )
+        print("Nessuna corrispondenza trovata per lo Strong Scaling.")
         return
 
     df_speedup["Speedup"] = df_speedup["BaselineTime"] / df_speedup["MEAN"]
@@ -147,7 +148,7 @@ def plot_strong_scaling_speedup(df, save_path):
     ].unique()
 
     if len(test_cases_with_speedup) == 0:
-        print("Nessun dato di speedup valido da plottare.")
+        print("Nessun dato di Strong Scaling valido da plottare.")
         return
 
     df_to_plot = df_speedup[df_speedup["TestCaseLabel"].isin(test_cases_with_speedup)]
@@ -166,13 +167,8 @@ def plot_strong_scaling_speedup(df, save_path):
     g.map(plt.plot, "units", "Speedup", marker="o", ms=8)
 
     for ax in g.axes.flat:
-        ax.plot(
-            [1, 32],
-            [1, 32],
-            "k--",
-            zorder=1,
-            label="Speedup Ideale",
-        )
+        title = ax.get_title()
+        ax.plot([1, 32], [1, 32], "k--", zorder=1)
 
     g.add_legend(title="Metodo Base")
     g.set_axis_labels("Numero di Unità (Thread/Processi)", "Speedup")
@@ -180,11 +176,19 @@ def plot_strong_scaling_speedup(df, save_path):
     g.fig.suptitle("Strong Scaling Speedup per Caso di Test", y=1.03, fontsize=16)
     plt.tight_layout(rect=[0, 0, 1, 0.97])
     plt.savefig(save_path)
-    print(f"Grafico dello speedup per Test Case salvato in: {save_path}")
+    print(f"Grafico dello Strong Scaling salvato in: {save_path}")
     plt.close()
 
 
 def plot_roofline_model(df, peak_performance, memory_bandwidth, save_path):
+    df = df[~df["NAME"].str.contains("Weak", case=False, na=False)].copy()
+
+    if df.empty:
+        print(
+            "Nessun dato valido per il Roofline Model dopo aver escluso i test 'Weak'."
+        )
+        return
+
     plt.style.use("seaborn-v0_8-whitegrid")
     fig, ax = plt.subplots(figsize=(12, 9))
     ax.set_xscale("log")
@@ -240,6 +244,56 @@ def plot_roofline_model(df, peak_performance, memory_bandwidth, save_path):
     plt.close()
 
 
+def plot_weak_scaling_efficiency(df, save_path):
+
+    # Filtra i test di Weak Scaling
+    df_weak = df[df["NAME"].str.contains("Weak", case=False, na=False)].copy()
+
+    if df_weak.empty:
+        print(
+            "Nessun test di Weak Scaling trovato (cerca 'Weak' nel nome del test case)."
+        )
+        return
+
+    baselines = df_weak.loc[df_weak.groupby(["NAME", "method_base"])["units"].idxmin()]
+    baseline_map = baselines.set_index(["NAME", "method_base"])["MEAN"].to_dict()
+
+    df_weak["BaselineTime"] = df_weak.apply(
+        lambda row: baseline_map.get((row["NAME"], row["method_base"])), axis=1
+    )
+    df_weak.dropna(subset=["BaselineTime"], inplace=True)
+
+    df_weak["Efficiency"] = df_weak["BaselineTime"] / df_weak["MEAN"]
+
+    df_weak = df_weak.sort_values(by="units").copy()
+
+    plt.style.use("seaborn-v0_8-whitegrid")
+    g = sns.FacetGrid(
+        df_weak,
+        col="NAME",
+        hue="method_base",
+        col_wrap=3,
+        height=5,
+        sharey=True,
+        legend_out=True,
+    )
+    g.map(plt.plot, "units", "Efficiency", marker="o", ms=8)
+
+    for ax in g.axes.flat:
+        ax.axhline(1.0, ls="--", color="k", zorder=1)
+        ax.set_ylim(bottom=0)
+
+    g.add_legend(title="Metodo Base")
+    g.set_axis_labels("Numero di Unità (Thread/Processi)", "Efficienza Parallela")
+    g.set_titles("{col_name}")
+    g.fig.suptitle("Weak Scaling Efficiency", y=1.03, fontsize=16)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.97])
+    plt.savefig(save_path)
+    print(f"Grafico del Weak Scaling salvato in: {save_path}")
+    plt.close()
+
+
 def main():
     if not os.path.exists(PLOTS_DIR):
         os.makedirs(PLOTS_DIR)
@@ -275,6 +329,9 @@ def main():
         PEAK_PERFORMANCE,
         MEMORY_BANDWIDTH,
         os.path.join(PLOTS_DIR, "roofline_model.png"),
+    )
+    plot_weak_scaling_efficiency(
+        full_df, os.path.join(PLOTS_DIR, "weak_scaling_efficiency.png")
     )
 
 
