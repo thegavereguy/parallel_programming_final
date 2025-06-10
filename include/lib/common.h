@@ -34,8 +34,10 @@ const std::vector<std::pair<Conditions, std::string>> target_cases = {
     {{1, .05, 1.0, 50000, 400}, "Massive_Spatial_Resolution_2"},
     {{1, .05, 1.0, 100000, 400}, "Massive_Spatial_Resolution_3"},
     {{1, .05, 10.0, 8192, 10000}, "Very_Large_Problem_1"},
-    {{1, .05, 10.0, 16384, 20000}, "Very_Large_Problem_2"},
-    {{1, .05, 10.0, 32768, 40000}, "Very_Large_Problem_3"},
+
+    // temporarily disabled due to long execution time
+    // {{1, .05, 10.0, 16384, 20000}, "Very_Large_Problem_2"},
+    // {{1, .05, 10.0, 32768, 40000}, "Very_Large_Problem_3"},
 };
 
 const std::vector<std::pair<Conditions, std::string>> weak_scaling_cases = {

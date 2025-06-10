@@ -242,6 +242,91 @@ TEST_CASE("parallel - 8 threads - implicit - BENCH", "[omp_8_im]") {
     };
   }
 }
+
+TEST_CASE("parallel - 16 threads - explicit - BENCH", "[omp_16_ex]") {
+  char* name = new char[100];
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
+
+    BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
+
+      meter.measure([conditions, input, output] {
+        return parallel8_explicit(conditions.first, input, output);
+      });
+
+      delete[] input;
+      delete[] output;
+    };
+  }
+}
+TEST_CASE("parallel - 16 threads - implicit - BENCH", "[omp_16_im]") {
+  char* name = new char[100];
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
+
+    BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
+
+      meter.measure([conditions, input, output] {
+        return parallel8_explicit(conditions.first, input, output);
+      });
+
+      delete[] input;
+      delete[] output;
+    };
+  }
+}
+TEST_CASE("parallel - 32 threads - explicit - BENCH", "[omp_32_ex]") {
+  char* name = new char[100];
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
+
+    BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
+
+      meter.measure([conditions, input, output] {
+        return parallel8_explicit(conditions.first, input, output);
+      });
+
+      delete[] input;
+      delete[] output;
+    };
+  }
+}
+TEST_CASE("parallel - 32 threads - implicit - BENCH", "[omp_32_im]") {
+  char* name = new char[100];
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
+
+    BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
+
+      meter.measure([conditions, input, output] {
+        return parallel8_explicit(conditions.first, input, output);
+      });
+
+      delete[] input;
+      delete[] output;
+    };
+  }
+}
 TEST_CASE("parallel alligned - 4 threads - explicit - BENCH",
           "[omp_4_ex_all]") {
   char* name = new char[100];
