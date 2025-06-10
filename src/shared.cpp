@@ -765,7 +765,6 @@ void parallel_variable_implicit(Conditions conditions, float* input,
 void parallel_variable_explicit(Conditions conditions, float* input,
                                 float* output, int n_threads) {
   omp_set_num_threads(n_threads);
-  fmt::print("Using {} threads for variable explicit method\n", n_threads);
   output[0]                  = input[0];
   output[conditions.n_x - 1] = input[conditions.n_x - 1];
   float dt                   = conditions.t_final / (conditions.n_t - 1);
