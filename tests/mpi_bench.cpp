@@ -14,19 +14,6 @@
 #include <cstdint>
 #include <cstdio>
 
-TEST_CASE("GPU 256 solution", "[gpu256]") {
-  char* name = new char[100];
-
-  for (Conditions conditions : test_cases) {
-    sprintf(name, "%ld,%ld", (long)conditions.n_x, (long)conditions.n_t);
-
-    BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
-      meter.measure([] {});
-    };
-  }
-  delete[] name;
-}
-
 int main(int argc, char* argv[]) {
   int result = Catch::Session().run(argc, argv);
   return result;

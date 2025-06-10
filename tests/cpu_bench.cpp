@@ -9,7 +9,7 @@
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include <catch2/reporters/catch_reporter_streaming_base.hpp>
 
-TEST_CASE("sequential - explicit - BENCH", "[seq_ex]") {
+TEST_CASE("sequential - explicit - BENCH", "[omp_1_ex]") {
   char* name = new char[100];
 
   for (auto conditions : target_cases) {
@@ -30,7 +30,7 @@ TEST_CASE("sequential - explicit - BENCH", "[seq_ex]") {
     };
   }
 }
-TEST_CASE("sequential - implicit - BENCH", "[seq_im]") {
+TEST_CASE("sequential - implicit - BENCH", "[omp_1_im]") {
   char* name = new char[100];
 
   for (auto conditions : target_cases) {
@@ -51,7 +51,7 @@ TEST_CASE("sequential - implicit - BENCH", "[seq_im]") {
     };
   }
 }
-TEST_CASE("sequential alligned - explicit - BENCH", "[seq_ex_all]") {
+TEST_CASE("sequential alligned - explicit - BENCH", "[omp_1_ex_all]") {
   char* name = new char[100];
 
   for (auto conditions : target_cases) {
@@ -72,7 +72,7 @@ TEST_CASE("sequential alligned - explicit - BENCH", "[seq_ex_all]") {
     };
   }
 }
-TEST_CASE("sequential SIMD - implicit - BENCH", "[seq_im_simd]") {
+TEST_CASE("sequential SIMD - implicit - BENCH", "[omp_1_im_simd]") {
   char* name = new char[100];
 
   for (auto conditions : target_cases) {
@@ -93,7 +93,7 @@ TEST_CASE("sequential SIMD - implicit - BENCH", "[seq_im_simd]") {
     };
   }
 }
-TEST_CASE("sequential PCR - implicit - BENCH", "[seq_im_pcr]") {
+TEST_CASE("sequential PCR - implicit - BENCH", "[omp_1_im_pcr]") {
   char* name = new char[100];
 
   for (auto conditions : target_cases) {
@@ -115,7 +115,7 @@ TEST_CASE("sequential PCR - implicit - BENCH", "[seq_im_pcr]") {
   }
 }
 
-TEST_CASE("parallel - 2 threads - explicit - BENCH", "[par2_ex]") {
+TEST_CASE("parallel - 2 threads - explicit - BENCH", "[omp_2_ex]") {
   char* name = new char[100];
   for (auto conditions : target_cases) {
     sprintf(name, "%s,%ld,%ld", conditions.second.data(),
@@ -136,7 +136,7 @@ TEST_CASE("parallel - 2 threads - explicit - BENCH", "[par2_ex]") {
     };
   }
 }
-TEST_CASE("parallel - 2 threads - implicit - BENCH", "[par2_im]") {
+TEST_CASE("parallel - 2 threads - implicit - BENCH", "[omp_2_im]") {
   char* name = new char[100];
   for (auto conditions : target_cases) {
     sprintf(name, "%s,%ld,%ld", conditions.second.data(),
@@ -158,7 +158,7 @@ TEST_CASE("parallel - 2 threads - implicit - BENCH", "[par2_im]") {
   }
 }
 
-TEST_CASE("parallel - 4 threads - explicit - BENCH", "[par4_ex]") {
+TEST_CASE("parallel - 4 threads - explicit - BENCH", "[omp_4_ex]") {
   char* name = new char[100];
   for (auto conditions : target_cases) {
     sprintf(name, "%s,%ld,%ld", conditions.second.data(),
@@ -179,7 +179,7 @@ TEST_CASE("parallel - 4 threads - explicit - BENCH", "[par4_ex]") {
     };
   }
 }
-TEST_CASE("parallel - 4 threads - implicit - BENCH", "[par4_im]") {
+TEST_CASE("parallel - 4 threads - implicit - BENCH", "[omp_4_im]") {
   char* name = new char[100];
   for (auto conditions : target_cases) {
     sprintf(name, "%s,%ld,%ld", conditions.second.data(),
@@ -200,7 +200,7 @@ TEST_CASE("parallel - 4 threads - implicit - BENCH", "[par4_im]") {
     };
   }
 }
-TEST_CASE("parallel - 8 threads - explicit - BENCH", "[par8_ex]") {
+TEST_CASE("parallel - 8 threads - explicit - BENCH", "[omp_8_ex]") {
   char* name = new char[100];
   for (auto conditions : target_cases) {
     sprintf(name, "%s,%ld,%ld", conditions.second.data(),
@@ -221,7 +221,7 @@ TEST_CASE("parallel - 8 threads - explicit - BENCH", "[par8_ex]") {
     };
   }
 }
-TEST_CASE("parallel - 8 threads - implicit - BENCH", "[par8_im]") {
+TEST_CASE("parallel - 8 threads - implicit - BENCH", "[omp_8_im]") {
   char* name = new char[100];
   for (auto conditions : target_cases) {
     sprintf(name, "%s,%ld,%ld", conditions.second.data(),
@@ -242,7 +242,8 @@ TEST_CASE("parallel - 8 threads - implicit - BENCH", "[par8_im]") {
     };
   }
 }
-TEST_CASE("parallel alligned - 4 threads - explicit - BENCH", "[par4_all_ex]") {
+TEST_CASE("parallel alligned - 4 threads - explicit - BENCH",
+          "[omp_4_ex_all]") {
   char* name = new char[100];
   for (auto conditions : target_cases) {
     sprintf(name, "%s,%ld,%ld", conditions.second.data(),
@@ -263,7 +264,7 @@ TEST_CASE("parallel alligned - 4 threads - explicit - BENCH", "[par4_all_ex]") {
     };
   }
 }
-TEST_CASE("sequential unroll - explicit - BENCH", "[seq_unr_ex]") {
+TEST_CASE("sequential unroll - explicit - BENCH", "[omp_1_ex_unr]") {
   char* name = new char[100];
   for (auto conditions : target_cases) {
     sprintf(name, "%s,%ld,%ld", conditions.second.data(),

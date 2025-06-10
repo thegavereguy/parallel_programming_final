@@ -1,6 +1,6 @@
 #!/bin/bash
 
-omp_tests=("seq_ex" "seq_im")
+omp_tests=("omp_1_ex" "omp_1_im" "omp_2_ex" "omp_2_im" "omp_4_ex" "omp_4_im" "omp_1_ex_all" "omp_1_ex_unr" "omp_1_im_simd")
 
 if [ -z "$BENCHMARK_SAMPLES" ]; then
 	export BENCHMARK_SAMPLES=5
@@ -29,6 +29,6 @@ n=(1 2 4)
 
 for iter in "${n[@]}"; do
 	echo "Running MPI benchmark for $iter processes"
-	mpirun -np $iter ../apps/mpi $BENCHMARK_SAMPLES >"$PROJECT_ROOT/results/mpi_$iter.csv"
+	mpirun -np $iter ../apps/mpi $BENCHMARK_SAMPLES >"$PROJECT_ROOT/results/mpi_${iter}_ex.csv"
 	# valutare se si riesce a spostare l'eseguibile in /build/tests
 done
