@@ -5,7 +5,7 @@ export CLEAR_RESULTS=0
 export PROJECT_ROOT=$(pwd)
 
 # array of optiimization levels to try
-optimization_levels=(O2 O3)
+optimization_levels=(O0 O2 O3)
 
 ######################################################
 
