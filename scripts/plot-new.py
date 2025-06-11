@@ -6,14 +6,18 @@ import os
 import re
 import numpy as np
 
+# --- IMPOSTAZIONI GLOBALI E PARAMETRI UTENTE ---
 
 RESULTS_DIR = "results"
 PLOTS_DIR = "plots"
 
-# FLOPS per punto della griglia per ogni timestep
-FLOPS_PER_POINT = 5
+# FLOPS per punto della griglia per ogni timestep. DA ADATTARE AL TUO CODICE.
+FLOPS_PER_POINT = 5  # Aggiornato a un valore più realistico per FTCS
 
+# TODO: IMPOSTA I PARAMETRI DELLA TUA MACCHINA PER IL ROOFLINE MODEL
+# Performance di picco teorica della CPU in GFLOP/s
 PEAK_PERFORMANCE = 2500.0
+# Banda di memoria teorica in GB/s
 MEMORY_BANDWIDTH = 180.0
 
 
@@ -57,7 +61,6 @@ def load_and_process_data(folder):
         return pd.DataFrame()
 
     full_df = pd.concat(df_list, ignore_index=True)
-
     parsed_info = full_df["filename"].apply(parse_filename).apply(pd.Series)
     full_df = pd.concat([full_df, parsed_info], axis=1)
 
@@ -93,7 +96,7 @@ def load_and_process_data(folder):
     return full_df
 
 
-def plot_performance_barchart(df, save_path):
+def plot_performance_barchart(df, save_path, opt_level):
     df_sorted = df.sort_values(by=["NX", "units"])
     plt.style.use("seaborn-v0_8-whitegrid")
     plt.figure(figsize=(20, 12))
@@ -106,7 +109,11 @@ def plot_performance_barchart(df, save_path):
         hue="Implementation",
         palette=palette,
     )
-    ax.set_title("Confronto Performance per Caso di Test", fontsize=20, pad=20)
+    ax.set_title(
+        f"Confronto Performance per Caso di Test (Opt: {opt_level})",
+        fontsize=20,
+        pad=20,
+    )
     ax.set_xlabel("Caso di Test", fontsize=16)
     ax.set_ylabel("Performance (GFLOPs/s)", fontsize=16)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=40, ha="right", fontsize=11)
@@ -115,17 +122,16 @@ def plot_performance_barchart(df, save_path):
     plt.grid(True, which="both", ls="--")
     plt.tight_layout()
     plt.savefig(save_path)
-    print(f"Grafico a barre delle performance salvato in: {save_path}")
+    print(f"Grafico a barre salvato in: {save_path}")
     plt.close()
 
 
-def plot_strong_scaling_speedup(df, save_path):
+def plot_strong_scaling_speedup(df, save_path, opt_level):
     df = df[~df["NAME"].str.contains("Weak", case=False, na=False)].copy()
-
     baselines = df[df["units"] == 1].copy()
     if baselines.empty:
         print(
-            "Nessuna esecuzione di base (1 thread/processo) trovata per lo Strong Scaling."
+            f"[{opt_level}] Nessuna esecuzione di base (1 unità) trovata per lo Strong Scaling."
         )
         return
 
@@ -139,7 +145,7 @@ def plot_strong_scaling_speedup(df, save_path):
     df_speedup.dropna(subset=["BaselineTime"], inplace=True)
 
     if df_speedup.empty:
-        print("Nessuna corrispondenza trovata per lo Strong Scaling.")
+        print(f"[{opt_level}] Nessuna corrispondenza per lo Strong Scaling.")
         return
 
     df_speedup["Speedup"] = df_speedup["BaselineTime"] / df_speedup["MEAN"]
@@ -148,13 +154,12 @@ def plot_strong_scaling_speedup(df, save_path):
     ].unique()
 
     if len(test_cases_with_speedup) == 0:
-        print("Nessun dato di Strong Scaling valido da plottare.")
+        print(f"[{opt_level}] Nessun dato di Strong Scaling valido da plottare.")
         return
 
     df_to_plot = df_speedup[df_speedup["TestCaseLabel"].isin(test_cases_with_speedup)]
     df_to_plot = df_to_plot.sort_values(by="units").copy()
 
-    plt.style.use("seaborn-v0_8-whitegrid")
     g = sns.FacetGrid(
         df_to_plot,
         col="TestCaseLabel",
@@ -168,34 +173,36 @@ def plot_strong_scaling_speedup(df, save_path):
 
     for ax in g.axes.flat:
         title = ax.get_title()
-        ax.plot([1, 32], [1, 32], "k--", zorder=1)
+        max_units_in_facet = df_to_plot[df_to_plot["TestCaseLabel"] == title][
+            "units"
+        ].max()
+        if pd.notna(max_units_in_facet):
+            ax.plot([1, max_units_in_facet], [1, max_units_in_facet], "k--", zorder=1)
 
     g.add_legend(title="Metodo Base")
     g.set_axis_labels("Numero di Unità (Thread/Processi)", "Speedup")
     g.set_titles("{col_name}")
-    g.fig.suptitle("Strong Scaling Speedup per Caso di Test", y=1.03, fontsize=16)
+    g.fig.suptitle(f"Strong Scaling Speedup (Opt: {opt_level})", y=1.03, fontsize=16)
     plt.tight_layout(rect=[0, 0, 1, 0.97])
     plt.savefig(save_path)
-    print(f"Grafico dello Strong Scaling salvato in: {save_path}")
+    print(f"Grafico Strong Scaling salvato in: {save_path}")
     plt.close()
 
 
-def plot_roofline_model(df, peak_performance, memory_bandwidth, save_path):
+def plot_roofline_model(df, peak_performance, memory_bandwidth, save_path, opt_level):
     df = df[~df["NAME"].str.contains("Weak", case=False, na=False)].copy()
-
     if df.empty:
         print(
-            "Nessun dato valido per il Roofline Model dopo aver escluso i test 'Weak'."
+            f"[{opt_level}] Nessun dato per il Roofline Model dopo aver escluso i test 'Weak'."
         )
         return
 
-    plt.style.use("seaborn-v0_8-whitegrid")
     fig, ax = plt.subplots(figsize=(12, 9))
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("Intensità Aritmetica (FLOP/Byte)", fontsize=14)
     ax.set_ylabel("Performance (GFLOPs/s)", fontsize=14)
-    ax.set_title("Roofline Model", fontsize=18, pad=20)
+    ax.set_title(f"Roofline Model (Opt: {opt_level})", fontsize=18, pad=20)
 
     ai_range = np.logspace(-2, 4, 100)
     ai_knee = peak_performance / memory_bandwidth
@@ -244,15 +251,10 @@ def plot_roofline_model(df, peak_performance, memory_bandwidth, save_path):
     plt.close()
 
 
-def plot_weak_scaling_efficiency(df, save_path):
-
-    # Filtra i test di Weak Scaling
+def plot_weak_scaling_efficiency(df, save_path, opt_level):
     df_weak = df[df["NAME"].str.contains("Weak", case=False, na=False)].copy()
-
     if df_weak.empty:
-        print(
-            "Nessun test di Weak Scaling trovato (cerca 'Weak' nel nome del test case)."
-        )
+        print(f"[{opt_level}] Nessun test di Weak Scaling trovato.")
         return
 
     baselines = df_weak.loc[df_weak.groupby(["NAME", "method_base"])["units"].idxmin()]
@@ -263,13 +265,9 @@ def plot_weak_scaling_efficiency(df, save_path):
     )
     df_weak.dropna(subset=["BaselineTime"], inplace=True)
 
-    df_weak["Efficiency"] = df_weak["BaselineTime"] / (
-        df_weak["MEAN"] * df_weak["units"]
-    )
-
+    df_weak["Efficiency"] = df_weak["BaselineTime"] / df_weak["MEAN"]
     df_weak = df_weak.sort_values(by="units").copy()
 
-    plt.style.use("seaborn-v0_8-whitegrid")
     g = sns.FacetGrid(
         df_weak,
         col="NAME",
@@ -288,53 +286,86 @@ def plot_weak_scaling_efficiency(df, save_path):
     g.add_legend(title="Metodo Base")
     g.set_axis_labels("Numero di Unità (Thread/Processi)", "Efficienza Parallela")
     g.set_titles("{col_name}")
-    g.fig.suptitle("Weak Scaling Efficiency", y=1.03, fontsize=16)
+    g.fig.suptitle(f"Weak Scaling Efficiency (Opt: {opt_level})", y=1.03, fontsize=16)
 
     plt.tight_layout(rect=[0, 0, 1, 0.97])
     plt.savefig(save_path)
-    print(f"Grafico del Weak Scaling salvato in: {save_path}")
+    print(f"Grafico Weak Scaling salvato in: {save_path}")
     plt.close()
 
 
 def main():
-    if not os.path.exists(PLOTS_DIR):
-        os.makedirs(PLOTS_DIR)
-
-    full_df = load_and_process_data(RESULTS_DIR)
-
-    if full_df.empty:
+    """
+    Scansiona le sottocartelle in RESULTS_DIR, ognuna rappresentante un livello
+    di ottimizzazione, e genera un set di grafici per ciascuna.
+    """
+    if not os.path.exists(RESULTS_DIR):
+        print(f"La cartella dei risultati '{RESULTS_DIR}' non esiste.")
         return
 
-    print("Dati caricati ed elaborati con successo. Riepilogo:")
-    print(
-        full_df[
-            [
-                "TestCaseLabel",
-                "Implementation",
-                "units",
-                "NX",
-                "MEAN",
-                "GFLOPs/s",
-                "Arithmetic Intensity",
-            ]
-        ].round(2)
-    )
+    # Trova tutte le sottocartelle in RESULTS_DIR (es. 'O2', 'O3')
+    try:
+        optimization_levels = [
+            d
+            for d in os.listdir(RESULTS_DIR)
+            if os.path.isdir(os.path.join(RESULTS_DIR, d))
+        ]
+    except FileNotFoundError:
+        print(f"Errore nell'accesso a '{RESULTS_DIR}'.")
+        return
 
-    plot_performance_barchart(
-        full_df, os.path.join(PLOTS_DIR, "performance_barchart.png")
-    )
-    plot_strong_scaling_speedup(
-        full_df, os.path.join(PLOTS_DIR, "strong_scaling_speedup.png")
-    )
-    plot_roofline_model(
-        full_df,
-        PEAK_PERFORMANCE,
-        MEMORY_BANDWIDTH,
-        os.path.join(PLOTS_DIR, "roofline_model.png"),
-    )
-    plot_weak_scaling_efficiency(
-        full_df, os.path.join(PLOTS_DIR, "weak_scaling_efficiency.png")
-    )
+    if not optimization_levels:
+        print(f"Nessuna sottocartella di ottimizzazione trovata in '{RESULTS_DIR}'.")
+        print(
+            "Lo script si aspetta una struttura tipo 'results/O2/', 'results/O3/', ecc."
+        )
+        return
+
+    # Itera su ogni livello di ottimizzazione trovato
+    for opt_level in optimization_levels:
+        print(f"\n--- Elaborazione livello di ottimizzazione: {opt_level} ---")
+        current_results_dir = os.path.join(RESULTS_DIR, opt_level)
+        current_plots_dir = os.path.join(PLOTS_DIR, opt_level)
+
+        # Crea la cartella di output per i grafici se non esiste
+        os.makedirs(current_plots_dir, exist_ok=True)
+
+        # Carica e processa i dati per il livello di ottimizzazione corrente
+        full_df = load_and_process_data(current_results_dir)
+
+        if full_df.empty:
+            print(
+                f"Nessun dato da processare per il livello '{opt_level}'. Salto al prossimo."
+            )
+            continue
+
+        print(f"Dati per '{opt_level}' caricati. Generazione grafici...")
+
+        # Genera tutti i grafici per il set di dati corrente
+        plot_performance_barchart(
+            full_df,
+            os.path.join(current_plots_dir, "performance_barchart.png"),
+            opt_level,
+        )
+        plot_strong_scaling_speedup(
+            full_df,
+            os.path.join(current_plots_dir, "strong_scaling_speedup.png"),
+            opt_level,
+        )
+        plot_roofline_model(
+            full_df,
+            PEAK_PERFORMANCE,
+            MEMORY_BANDWIDTH,
+            os.path.join(current_plots_dir, "roofline_model.png"),
+            opt_level,
+        )
+        plot_weak_scaling_efficiency(
+            full_df,
+            os.path.join(current_plots_dir, "weak_scaling_efficiency.png"),
+            opt_level,
+        )
+
+    print("\n--- Elaborazione completata. ---")
 
 
 if __name__ == "__main__":
