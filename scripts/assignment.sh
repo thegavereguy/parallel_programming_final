@@ -1,34 +1,37 @@
 export BENCHMARK_CONFIDENCE_INTERVAL=0.30
 export BENCH_SAMPLES=2
 export CLEAR_RESULTS=0
-export OPTIMIZATION_LEVEL=O3
 
 export PROJECT_ROOT=$(pwd)
 
+# array of optiimization levels to try
+optimization_levels=(O2 O3)
+
 ######################################################
 
-mkdir results > /dev/null
+mkdir results >/dev/null
 
 if [ ${CLEAR_RESULTS} == 1 ]; then
-	echo "Clearing previous results";
+	echo "Clearing previous results"
 	rm -rf results/*
 else
-  echo "Keeping previous results";
+	echo "Keeping previous results"
 fi
 
 # Print information about the cpu
-lscpu > results/cpu_info.txt
+lscpu >results/cpu_info.txt
 
 # Creta a build directory if it does not exist
-mkdir build > /dev/null
+mkdir build >/dev/null
 cd build
 
-cmake  -DOPTIMIZATION_LEVEL=${OPTIMIZATION_LEVEL} ..
+for OPTIMIZATION_LEVEL in "${optimization_levels[@]}"; do
+	echo "Building with optimization level: ${OPTIMIZATION_LEVEL}"
+	mkdir -p ${PROJECT_ROOT}/results/${OPTIMIZATION_LEVEL}
+	export OPTIMIZATION_LEVEL=${OPTIMIZATION_LEVEL}
 
-# Remove the previous build
-# make clean
+	cmake -DOPTIMIZATION_LEVEL=${OPTIMIZATION_LEVEL} -DENABLE_OPTIMIZATION=ON ..
 
-make -j4
-cd ..
-
-# sh $PROJECT_ROOT/scripts/run_benchmarks.sh
+	make -j4
+	sh $PROJECT_ROOT/scripts/run_benchmarks.sh
+done
