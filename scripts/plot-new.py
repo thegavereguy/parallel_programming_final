@@ -11,7 +11,7 @@ RESULTS_DIR = "results"
 PLOTS_DIR = "plots"
 
 # FLOPS per punto della griglia per ogni timestep
-FLOPS_PER_POINT = 3
+FLOPS_PER_POINT = 5
 
 PEAK_PERFORMANCE = 2500.0
 MEMORY_BANDWIDTH = 180.0
@@ -263,7 +263,9 @@ def plot_weak_scaling_efficiency(df, save_path):
     )
     df_weak.dropna(subset=["BaselineTime"], inplace=True)
 
-    df_weak["Efficiency"] = df_weak["BaselineTime"] / df_weak["MEAN"]
+    df_weak["Efficiency"] = df_weak["BaselineTime"] / (
+        df_weak["MEAN"] * df_weak["units"]
+    )
 
     df_weak = df_weak.sort_values(by="units").copy()
 
