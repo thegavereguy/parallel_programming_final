@@ -7,80 +7,57 @@
 # Queue name
 #PBS -q short_cpuQ
 # Set the maximum wall time
-#PBS -l walltime=0:40:00
+#PBS -l walltime=1:00:00
 # Number of nodes, cpus, mpi processors and amount of memory
 #PBS -l select=1:ncpus=32:mpiprocs=32:mem=1gb
 
-
-# Modules for C++ compiler and CMake
+# Modules for C++ compiler, CMake and MPI
 module load gcc91
 module load openmpi/4.0.4
+module load cmake/3.15.4
 
 g++() {
-    g++-9.1.0 "$@"
+	g++-9.1.0 "$@"
 }
 
 if [ -z $PROJECT_DIR ]; then
-		PROJECT_DIR="parallel_programming_final"
+	PROJECT_DIR="parallel_programming_final"
 fi
 
 PROJECT_ROOT=$HOME/$PROJECT_DIR
 
-# Select the working directory
-cd $HOME/$PROJECT_DIR
+export BENCHMARK_CONFIDENCE_INTERVAL=0.30
+export BENCH_SAMPLES=2
+export CLEAR_RESULTS=0
 
-if [ -z "$OPTIMIZATION_LEVEL" ]; then
-	echo "OPTIMIZATION_LEVEL is not set. Setting it to O0";
-	export OPTIMIZATION_LEVEL=O0;
-	build_optimized=O0;
-else
-	echo "OPTIMIZATION_LEVEL is set to $OPTIMIZATION_LEVEL";
-	build_optimized=$OPTIMIZATION_LEVEL;
-fi
-
-if [ -z "$BENCH_SAMPLES" ]; then
-	export BENCH_SAMPLES=3
-fi
-
-echo "BENCH_SAMPLES is set to $BENCH_SAMPLES";
-
-if [ -z "$BENCHMARK_CONFIDENCE_INTERVAL" ]; then
-	export BENCHMARK_CONFIDENCE_INTERVAL=0.30
-fi
-echo "BENCHMARK_CONFIDENCE_INTERVAL is set to $BENCHMARK_CONFIDENCE_INTERVAL";
-
-
-if [ -z CLEAR_RESULTS ]; then
-	export CLEAR_RESULTS=0
-	clear_results=0
-else
-	clear_results=$CLEAR_RESULTS
-fi
+# array of optiimization levels to try
+optimization_levels=(O0 O2 O3)
 
 ######################################################
 
+mkdir results >/dev/null
 
-mkdir results > /dev/null
-
-if [ ${clear_results} == 1 ]; then
-	echo "Clearing previous results";
+if [ ${CLEAR_RESULTS} == 1 ]; then
+	echo "Clearing previous results"
 	rm -rf results/*
 else
-	echo "Keeping previous results";
+	echo "Keeping previous results"
 fi
 
-# Print information about the cpu and gpu (which is somewhere in lspci)
-lscpu > results/cpu_info.txt
+# Print information about the cpu
+lscpu >results/cpu_info.txt
 
 # Creta a build directory if it does not exist
-mkdir build > /dev/null
+mkdir build >/dev/null
 cd build
 
+for OPTIMIZATION_LEVEL in "${optimization_levels[@]}"; do
+	echo "Building with optimization level: ${OPTIMIZATION_LEVEL}"
+	mkdir -p ${PROJECT_ROOT}/results/${OPTIMIZATION_LEVEL}
+	export OPTIMIZATION_LEVEL=${OPTIMIZATION_LEVEL}
 
-# Compile the code
-cmake -DOPTIMIZATION_LEVEL=${build_optimized}  ..
+	cmake -DCMAKE_BUILD_TYPE=Release -DOPTIMIZATION_LEVEL=${OPTIMIZATION_LEVEL} -DENABLE_OPTIMIZATION=ON ..
 
-make -j4
-cd ..
-
-sh $PROJECT_ROOT/scripts/run_benchmarks.sh
+	make -j4
+	sh $PROJECT_ROOT/scripts/run_benchmarks.sh
+done
