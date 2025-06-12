@@ -6,15 +6,12 @@ import os
 import re
 import numpy as np
 
-# --- IMPOSTAZIONI GLOBALI E PARAMETRI UTENTE ---
-
 RESULTS_DIR = "results"
 PLOTS_DIR = "plots"
 
 # FLOPS per punto della griglia per ogni timestep. DA ADATTARE AL TUO CODICE.
 FLOPS_PER_POINT = 5  # Aggiornato a un valore più realistico per FTCS
 
-# TODO: IMPOSTA I PARAMETRI DELLA TUA MACCHINA PER IL ROOFLINE MODEL
 # Performance di picco teorica della CPU in GFLOP/s
 PEAK_PERFORMANCE = 2500.0
 # Banda di memoria teorica in GB/s
@@ -265,7 +262,9 @@ def plot_weak_scaling_efficiency(df, save_path, opt_level):
     )
     df_weak.dropna(subset=["BaselineTime"], inplace=True)
 
-    df_weak["Efficiency"] = df_weak["BaselineTime"] / df_weak["MEAN"]
+    df_weak["Efficiency"] = df_weak["BaselineTime"] / (
+        df_weak["MEAN"] * df_weak["units"]
+    )
     df_weak = df_weak.sort_values(by="units").copy()
 
     g = sns.FacetGrid(
