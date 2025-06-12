@@ -12,10 +12,10 @@ PLOTS_DIR = "plots"
 # FLOPS per punto della griglia per ogni timestep. DA ADATTARE AL TUO CODICE.
 FLOPS_PER_POINT = 5  # Aggiornato a un valore più realistico per FTCS
 
-# Performance di picco teorica della CPU in GFLOP/s
-PEAK_PERFORMANCE = 2500.0
+# Performance di picco teorica della CPU in MFLOP/s
+PEAK_PERFORMANCE = 7360.0
 # Banda di memoria teorica in GB/s
-MEMORY_BANDWIDTH = 180.0
+MEMORY_BANDWIDTH = 280.0
 
 
 def parse_filename(filename):

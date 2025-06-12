@@ -144,7 +144,7 @@ TEST_CASE("Sequential solution - loop unroll - explicit - Test",
   initialize_array(output, conditions.n_x);
   input[0]                  = 100;
   input[conditions.n_x - 1] = 200;
-  sequential_unroll_explicit(conditions, input, output);
+  sequential_explicit_unroll(conditions, input, output);
   for (int i = 0; i < conditions.n_x; i++) {
     // fmt::print("{} ", output[i]);
     REQUIRE_THAT(output[i], Catch::Matchers::WithinAbs(expected[i], 0.001));

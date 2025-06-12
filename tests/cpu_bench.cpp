@@ -64,7 +64,7 @@ TEST_CASE("sequential alligned - explicit - BENCH", "[omp_1_ex_all]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return sequential_alligned_explicit(conditions.first, input, output);
+        return sequential_explicit_alligned(conditions.first, input, output);
       });
 
       delete[] input;
@@ -362,7 +362,7 @@ TEST_CASE("sequential unroll - explicit - BENCH", "[omp_1_ex_unr]") {
       float* output                   = new float[conditions.first.n_x];
 
       meter.measure([conditions, input, output] {
-        return sequential_unroll_explicit(conditions.first, input, output);
+        return sequential_explicit_unroll(conditions.first, input, output);
       });
 
       delete[] input;

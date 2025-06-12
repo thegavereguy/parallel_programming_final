@@ -24,7 +24,7 @@ void sequential_explicit(Conditions conditions, float* input, float* output) {
   }
 }
 
-void sequential_unroll_explicit(Conditions conditions, float* input,
+void sequential_explicit_unroll(Conditions conditions, float* input,
                                 float* output) {
   output[0]                  = input[0];
   output[conditions.n_x - 1] = input[conditions.n_x - 1];
@@ -76,7 +76,7 @@ void parallel4_alligned_explicit(Conditions conditions, float* input,
   free(tmp_out);
   free(tmp_in);
 }
-void sequential_alligned_explicit(Conditions conditions, float* input,
+void sequential_explicit_alligned(Conditions conditions, float* input,
                                   float* output) {
   float dt = conditions.t_final / (conditions.n_t - 1);
   float dx = conditions.L / (conditions.n_x - 1);
@@ -110,6 +110,39 @@ void sequential_alligned_explicit(Conditions conditions, float* input,
   free(tmp_in);
 }
 
+void sequential_explicit_simd(Conditions conditions, float* input,
+                              float* output) {
+  float dt = conditions.t_final / (conditions.n_t - 1);
+  float dx = conditions.L / (conditions.n_x - 1);
+
+  float* tmp_in  = (float*)aligned_alloc(32, conditions.n_x * sizeof(float));
+  float* tmp_out = (float*)aligned_alloc(32, conditions.n_x * sizeof(float));
+  for (int i = 0; i < conditions.n_x; i++) {
+    tmp_in[i]  = input[i];
+    tmp_out[i] = 0;
+  }
+
+  tmp_out[0]                  = tmp_in[0];
+  tmp_out[conditions.n_x - 1] = tmp_in[conditions.n_x - 1];
+
+  for (int t = 0; t < conditions.n_t; t++) {
+    {
+#pragma omp for simd
+      for (int j = 1; j < conditions.n_x - 1; j += 1) {
+        tmp_out[j] = tmp_in[j] + conditions.alpha * (dt / (dx * dx)) *
+                                     (tmp_in[j + 1] - 2 * tmp_in[j] +
+                                      tmp_in[j - 1]);  // d^2u
+      }
+    }
+
+    std::swap(tmp_in, tmp_out);
+  }
+  for (int i = 0; i < conditions.n_x; i++) {
+    output[i] = tmp_in[i];
+  }
+  free(tmp_out);
+  free(tmp_in);
+}
 void sequential_implicit(Conditions conditions, float* input, float* output) {
   float dt = conditions.t_final / (conditions.n_t - 1);
   float dx = conditions.L / (conditions.n_x - 1);
