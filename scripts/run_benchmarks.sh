@@ -1,6 +1,7 @@
 #!/bin/bash
 
-omp_tests=("omp_1_ex" "omp_1_im" "omp_2_ex" "omp_2_im" "omp_4_ex" "omp_4_im" "omp_8_ex" "omp_8_im" "omp_16_ex" "omp_16_im" "omp_32_ex" "omp_32_im" "omp_1_ex_all" "omp_1_ex_unr" "omp_1_im_simd")
+#omp_tests=("omp_1_ex" "omp_1_im" "omp_2_ex" "omp_2_im" "omp_4_ex" "omp_4_im" "omp_8_ex" "omp_8_im" "omp_1_ex_all" "omp_1_ex_unr" "omp_1_im_simd")
+omp_tests=("omp_1_ex_simd")
 
 if [ -z "$BENCHMARK_SAMPLES" ]; then
 	export BENCHMARK_SAMPLES=5
@@ -13,7 +14,9 @@ fi
 if [ -z "$OPTIMIZATION_LEVEL" ]; then
 	export OPTIMIZATION_LEVEL=O3
 fi
+
 echo "Running $BENCHMARK_SAMPLES samples per benchmark with $BENCHMARK_CONFIDENCE_INTERVAL confidence interval"
+
 # go to folder /build/tests relative to the project root
 if [ -z "$PROJECT_ROOT" ]; then
 	PROJECT_ROOT=$(git rev-parse --show-toplevel)
@@ -28,7 +31,7 @@ done
 
 echo "Running MPI benchmarks"
 
-n=(1 2 4 8 16 32)
+n=(1 2 4)
 
 for iter in "${n[@]}"; do
 	echo "Running MPI benchmark for $iter processes"
