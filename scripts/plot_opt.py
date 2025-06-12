@@ -10,12 +10,12 @@ RESULTS_DIR = "results"
 PLOTS_DIR = "plots"
 
 # FLOPS per punto della griglia per ogni timestep. DA ADATTARE AL TUO CODICE.
-FLOPS_PER_POINT = 5  # Aggiornato a un valore più realistico per FTCS
+FLOPS_PER_POINT = 3  # Aggiornato a un valore più realistico per FTCS
 
 # Performance di picco teorica della CPU in MFLOP/s
-PEAK_PERFORMANCE = 7360.0
+PEAK_PERFORMANCE = 6451.0
 # Banda di memoria teorica in GB/s
-MEMORY_BANDWIDTH = 280.0
+MEMORY_BANDWIDTH = 140 * 4
 
 
 def parse_filename(filename):
@@ -90,10 +90,26 @@ def load_and_process_data(folder):
     full_df["Arithmetic Intensity"] = total_flops.divide(total_bytes).fillna(0)
 
     full_df = full_df[full_df["method_base"] != "Unknown"].copy()
+
+    # 1 lettura e 1 scrittura di un double unto per passo temporale.
+    bytes_per_point = 2 * 8
+    total_bytes = full_df["NX"] * full_df["NT"] * bytes_per_point
+    full_df["Arithmetic Intensity"] = total_flops.divide(total_bytes).fillna(0)
+
+    execution_time_sec = full_df["MEAN"] * 1e-3
+    full_df["Achieved Memory Bandwidth (GB/s)"] = (
+        total_bytes / execution_time_sec
+    ) / 1e9
+
+    full_df = full_df[full_df["method_base"] != "Unknown"].copy()
+    return full_df
     return full_df
 
 
 def plot_performance_barchart(df, save_path, opt_level):
+
+    df = df[~df["NAME"].str.contains("Weak", case=False, na=False)].copy()
+
     df_sorted = df.sort_values(by=["NX", "units"])
     plt.style.use("seaborn-v0_8-whitegrid")
     plt.figure(figsize=(20, 12))
@@ -170,11 +186,7 @@ def plot_strong_scaling_speedup(df, save_path, opt_level):
 
     for ax in g.axes.flat:
         title = ax.get_title()
-        max_units_in_facet = df_to_plot[df_to_plot["TestCaseLabel"] == title][
-            "units"
-        ].max()
-        if pd.notna(max_units_in_facet):
-            ax.plot([1, max_units_in_facet], [1, max_units_in_facet], "k--", zorder=1)
+        ax.plot([1, 32], [1, 32], "k--", zorder=1)
 
     g.add_legend(title="Metodo Base")
     g.set_axis_labels("Numero di Unità (Thread/Processi)", "Speedup")
@@ -293,6 +305,49 @@ def plot_weak_scaling_efficiency(df, save_path, opt_level):
     plt.close()
 
 
+def plot_achieved_bandwidth(df, theoretical_bandwidth, save_path, opt_level):
+
+    df = df[~df["NAME"].str.contains("Weak", case=False, na=False)].copy()
+    df_sorted = df.sort_values(by=["NX", "units"])
+    plt.style.use("seaborn-v0_8-whitegrid")
+    plt.figure(figsize=(20, 12))
+    unique_implementations = df_sorted["Implementation"].nunique()
+    palette = sns.color_palette("viridis", n_colors=unique_implementations)
+
+    ax = sns.barplot(
+        data=df_sorted,
+        x="TestCaseLabel",
+        y="Achieved Memory Bandwidth (GB/s)",
+        hue="Implementation",
+        palette=palette,
+    )
+
+    # Aggiunge una linea per il picco teorico come riferimento
+    ax.axhline(
+        theoretical_bandwidth,
+        ls="--",
+        color="red",
+        lw=2,
+        label=f"Picco Teorico ({theoretical_bandwidth} GB/s)",
+    )
+
+    ax.set_title(
+        f"Banda di Memoria Effettiva per Caso di Test (Opt: {opt_level})",
+        fontsize=20,
+        pad=20,
+    )
+    ax.set_xlabel("Caso di Test", fontsize=16)
+    ax.set_ylabel("Banda di Memoria Effettiva (GB/s)", fontsize=16)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=40, ha="right", fontsize=11)
+
+    plt.legend(title="Implementazione", fontsize=12)
+    plt.grid(True, which="both", ls="--")
+    plt.tight_layout()
+    plt.savefig(save_path)
+    print(f"Grafico banda di memoria salvato in: {save_path}")
+    plt.close()
+
+
 def main():
     """
     Scansiona le sottocartelle in RESULTS_DIR, ognuna rappresentante un livello
@@ -361,6 +416,12 @@ def main():
         plot_weak_scaling_efficiency(
             full_df,
             os.path.join(current_plots_dir, "weak_scaling_efficiency.png"),
+            opt_level,
+        )
+        plot_achieved_bandwidth(
+            full_df,
+            MEMORY_BANDWIDTH,
+            os.path.join(current_plots_dir, "achieved_bandwidth.png"),
             opt_level,
         )
 
