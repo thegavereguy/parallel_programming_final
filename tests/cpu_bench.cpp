@@ -72,6 +72,28 @@ TEST_CASE("sequential alligned - explicit - BENCH", "[omp_1_ex_all]") {
     };
   }
 }
+TEST_CASE("sequential SIMD - explicit - BENCH", "[omp_1_ex_simd]") {
+  char* name = new char[100];
+
+  for (auto conditions : target_cases) {
+    sprintf(name, "%s,%ld,%ld", conditions.second.data(),
+            (long)conditions.first.n_x, (long)conditions.first.n_t);
+    BENCHMARK_ADVANCED(name)(Catch::Benchmark::Chronometer meter) {
+      float* input                    = new float[conditions.first.n_x];
+      input[0]                        = 100;
+      input[conditions.first.n_x - 1] = 200;
+      float* output                   = new float[conditions.first.n_x];
+
+      meter.measure([conditions, input, output] {
+        return sequential_explicit_simd(conditions.first, input, output);
+      });
+
+      delete[] input;
+      delete[] output;
+    };
+  }
+}
+
 TEST_CASE("sequential SIMD - implicit - BENCH", "[omp_1_im_simd]") {
   char* name = new char[100];
 

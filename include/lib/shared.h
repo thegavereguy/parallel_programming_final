@@ -3,6 +3,7 @@ void sequential_explicit(Conditions, float*, float*);
 
 void sequential_explicit_unroll(Conditions, float*, float*);
 void sequential_explicit_alligned(Conditions, float*, float*);
+void sequential_explicit_simd(Conditions, float*, float*);
 
 void parallel4_alligned_explicit(Conditions, float*, float*);
 
