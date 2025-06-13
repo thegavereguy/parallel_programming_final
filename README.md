@@ -11,7 +11,6 @@
   - [Getting started](#getting-started)
     - [Cloning repository](#cloning-repository)
     - [Building](#building)
-      - [Parts](#parts)
       - [Optimization (to be fixed)](#optimization-to-be-fixed)
       - [Manual building](#manual-building)
       - [Automatic building and test running](#automatic-building-and-test-running)
@@ -43,29 +42,32 @@ cd parallel_programming_final
 
 ### Building 
 
-#### Parts
-- OpenMP implementation '(required)'.
-- MPI implementation (can be included by setting the ENV variable )
-    - `export BUILD_MPI=true`
-
 #### Optimization (to be fixed)
 
-Compiler optimization can be toggled using:
+When building manually, compiler optimization can be toggled using:
 ```
-export BUILD_OPTMIZED=true|false
+export ENABLE_OPTIMIZATION=ON|OFF
 ```
+
+The optimization level can be set with:
+```
+export OPTIMIZATION_LEVEL=O0|O1|O2|O3|Ofast
+```
+
+Keen in mind that these setting are used inside the build script (`assignment.sh`). When building manually, these should be passed as arguments when calling `cmake`.
 
 #### Manual building
 
-After selecting the required parts we can manually compile the project:
-
+When not running the `assignment.sh` script or submitting the `assignment.pbs` job, the project can be manually built and run:
 
 ```sh
 mkdir build
 cd build
-cmake .. # of /apps/cmake-3.20.3/bin/cmake on the cluster
+cmake .. # add settings if required, ex: -DENABLE_OPTIMIZATION=ON -DOPTIMIZATION_LEVEL=O2
 make 
 ```
+
+When building on the cluster, make sure to load the `cmake-3.15.4` and `openmpi-4.0.4` modules. 
 
 #### Automatic building and test running
 
@@ -74,3 +76,4 @@ The various build settings can be changes modifying the exported variable at the
 
 The results are saved into a `results` folder.
 
+!!! When run with 10 benchmark samples and all the test cases, the execution takes around 30-40 mins !!!
