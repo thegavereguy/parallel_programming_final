@@ -36,7 +36,7 @@
 ### Cloning repository
 
 ```sh
-git clone --recursive https://github.com/thgavereguy/parallel_programming_final
+git clone --recursive https://github.com/thegavereguy/parallel_programming_final
 cd parallel_programming_final
 ```
 
